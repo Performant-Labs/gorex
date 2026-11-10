@@ -1,26 +1,38 @@
 ## Brief Review (Round 1)
 
 ### BLOCK findings
-
-**[B-1] Criterion 10 requires Ctrl+Shift+W to close Settings on Windows, but the brief provides no mechanism for it there — and its own premises rule one out.** §2 specifies the Settings window's own key handling on Windows as exactly Esc, Ctrl+W and Ctrl+, ("The Settings window needs its own Esc and Ctrl+W handling to close it… the Settings window's own key handling on Windows also handles Ctrl+,"). §4's rule "Close Pane's item (⌘W on macOS, Ctrl+Shift+W elsewhere) closes Settings" is a menu-item mechanism, which works on Linux (every window gets the menu bar, `RoleClose`/accelerators fire) and on macOS (main-menu key equivalents). But the brief's own verified premise is "Native-UI windows run no menu shortcuts on Windows (`shortcuts()` in `commands.go`)" — backed by the shown comment at `commands.go:321-323` ("on Windows, where windows of native UI run no menu shortcuts"). So on Windows, Ctrl+Shift+W in Settings reaches neither the menu accelerator nor Settings' own key list, and criterion 10's clause "on Windows and Linux, Ctrl+Shift+W … which from Settings closes Settings" is unsatisfiable as specified. Fix: add Ctrl+Shift+W to §2's list of keys the Settings view handles itself on Windows (and reconcile with criterion 10), or drop the Windows half of the clause.
-
-**[B-2] Criterion 10 and §4 contradict each other about ⌘T from Settings.** Criterion 10: "With Settings frontmost, ⌘T, ⌘D and ⌘K and ⌘1–⌘9 (their Ctrl+Shift equivalents elsewhere) do not act on the hidden main window." But §4 classifies New Tab as **app-wide**: "The app-wide commands are Settings…, New Tab (as today, it opens or brings the main window to the front first)… App-wide commands run directly, not through `a.do`." On macOS the main menu delivers ⌘T to `cmdNewTab` whatever window is front; app-wide means it runs, brings the main window forward and opens a tab in it — which is acting on the main window from Settings. ⌘D, ⌘K and ⌘1–⌘9 are consistent (they need the main window and the window check blocks them), but ⌘T is classified to act while the criterion forbids it. Fix: either remove New Tab from the app-wide list (making ⌘T from Settings a no-op like ⌘D), or reword criterion 10 to exempt New Tab ("⌘T opens or raises the main window; ⌘D, ⌘K and ⌘1–⌘9 do nothing"). As written, the implementation cannot satisfy both.
+None.
 
 ### Needs-verification findings
-**[NV-1]** The mygo behavioral claims in §8 (SetChecked safe headless, `Focus`/`Close`/`NewWindow`/`Theme.SetSource` block headless, `Invalidate` early-return, `OnClosed` a method on `*Window`, `app.go:591` FocusedWindow for menu clicks, `menu.go:85-88`, `RoleClose` closing the clicked window, off-darwin `SetMenu` on every window, `OnActivate` only from `applicationShouldHandleReopen`) — the mygo source lines are cited but not shown in this prompt; the probe output is described, not attached. Settling evidence: the quoted lines from mygo `v0.3.5-0.20261008…` (`menu.go:243-264`, `loop.go:87-100`, `window.go:513-519/534/607`, `content.go:145-148`, `app.go:319-323/591`, `internal/darwin/app.go:305-306`) and `docs/handoffs/0001-settings-window/evidence/mygoprobe/output.txt` as committed.
-**[NV-2]** `ui.KeyComma` exists in mygo's `ui/keys.go:45` and `,` is a valid accelerator string — settle with the quoted `ui/keys.go` lines and the `internal/accelerator` acceptance of `,` from handoff-A.
-**[NV-3]** "In legacy terminal encoding Ctrl+, sends nothing" (the justification for the README exception) — the brief itself concedes this is unverified; settle with issue #1's text or the terminal plugin's legacy encoding table.
-**[NV-4]** That `a.win` is set to nil when the main window closes (the `OnActivate` change's entire effect rests on it; the excerpts show `reset()` clearing per-window state but not `a.win`'s clearing) — settle with the main-window `OnClosed` handler in `main.go`.
+**[NV-1]** "In legacy terminal encoding Ctrl+, sends nothing" (§2, the justification for the Shift-rule exception) — the brief itself admits this is not verified against source; the evidence would be the legacy encoding tables in Ghostty's native library behind `plugins/terminal/internal/vt/encode.go` (not in the Go module), or a runtime probe on Windows/Linux.
+
+**[NV-2]** "Native-UI windows run no menu shortcuts on Windows" (§2, §4) — this drives the entire Windows key-handling design; evidence would be the mygo Windows backend's key-equivalent/menu-accelerator dispatch code, or a probe on Windows. The shown `commands.go:331-338` excerpt only shows GoRex's own `shortcuts()` loop, not mygo's Windows behavior.
+
+**[NV-3]** "`ui.KeyComma` exists at `ui/keys.go:45`" — cited but no excerpt of `ui/keys.go` is shown in this prompt; the excerpt of that line would settle it.
+
+**[NV-4]** "`,` is a valid accelerator key" (cited to handoff-A round 2, `internal/accelerator`) — that source is not shown here; an excerpt of the accelerator parser accepting `,` would settle it.
+
+**[NV-5]** The probe results for `SetChecked` / `Invalidate` returning headless and `Focus` / `Close` / `Theme.SetSource` blocking (§8) — the committed `docs/handoffs/0001-settings-window/evidence/mygoprobe/output.txt` and `probe_test.go` are described but their contents are not shown in this prompt.
+
+**[NV-6]** "Linux and Windows share the same `update` / `postMain` path" for `SetChecked` headless (§6 "No test hangs") — the probe ran on darwin only; a run of the probe (or the non-darwin menu/loop code paths) on Linux/Windows would settle it.
+
+**[NV-7]** "`Application.SetMenu` gives every window the app menu bar off darwin" (`app.go:319-323`) and "`RoleClose` defaults to CmdOrCtrl+W and closes the clicked window" (`menu.go:507-508`, `:575-576`) — cited with line numbers but the surrounding text is not shown in this prompt; those excerpts would settle it.
 
 ### WARN findings
-**[W-1]** Migration retry vs existing backup: if `settings.v1.json` already exists (from an earlier run whose v2 write failed after a successful backup), the retry's behavior — overwrite the backup, keep the older one, or treat migration as done — is unspecified. Recommend stating it (overwrite is the natural choice, since the v1 file was left unchanged).
-**[W-2]** Timing of the v2 write after a successful migration is unspecified: "migrates to v2 on first load" but nothing says `saveSettings` runs at that load, so a crash between backup and first write repeats the migration forever. Idempotent, so benign, but the tests in criterion 12 should pin when the v2 file first appears on disk.
-**[W-3]** The failed-backup path makes the app silently read-only for the whole run: appearance/text-size changes work in memory but are never persisted and no user-visible signal is specified. Recommend stating that this silence is intended (or noting it in the window's footer), since it is the one path where the user loses work invisibly.
-**[W-4]** The probe validating headless `SetChecked` ran on darwin only; the brief extrapolates to Linux/Windows from shared `update`/`postMain` code. Reasonable, but the criterion-12 test suite will run on all platforms in CI — if a backend diverges, the tests hang rather than fail. Worth a note that the test may need a timeout guard.
+**[W-1]** §1 does not specify what happens to a v1 (or v2) `appearance` value that is not `""`/`"light"`/`"dark"`/`"system"` (a hand edit like `"blue"`). "Default cannot be removed" restores Default's fields but nothing restores an invalid top-level `appearance`. Recommend: specify normalization to `"system"` on load/migration.
+
+**[W-2]** The read-only "Write gate" (§6) is triggered only at load time (newer version, unparsable, backup failure). A save that fails later in the run (disk fills after launch) is not covered: the footer would still say "Changes apply and save as you make them" while `saveSettings` silently fails, contradicting §2's "The user is never left believing a change was saved when it was not." Recommend: either propagate a `saveSettings` failure into the read-only state and footer, or explicitly scope the guarantee to load-time detection.
+
+**[W-3]** Criterion 9/10 Windows behavior (Settings' own handling of Esc, Ctrl+W, Ctrl+Shift+W, Ctrl+, and "exactly these four keys") is not covered by criterion 12's test requirement, and no test seam is specified for it — the key handling lives in `settingsView`, but the brief does not say how the four-key-only rule is pinned by a test (e.g. driving key events at `settingsView` via `ui.NewTester` on any OS). Recommend naming the test that pins the four-key set, or acknowledging it as manual-only.
+
+**[W-4]** The Settings window's Esc/Ctrl+W close shortcuts on Windows are new user-facing shortcuts not recorded in the README Shortcuts table; criterion 13 only adds the Ctrl+, row. Recommend deciding whether the Settings-window close shortcuts belong in the table.
+
+**[W-5]** Criterion 5's cross-reference ("except as provided by criterion 6") is loose: criterion 6 describes migration, including the 11.6 restoration, while criterion 5 carries the clamp rule. Also §1's rule "Only a value greater than 0 is clamped" applies to v1; the analogous v2 case (`fontSize: 0` in a v2 file) is only implied via "Default cannot be removed" treating 0 as missing. Recommend stating the v2 zero-value rule explicitly in criterion 5 or 7.
 
 ### NIT findings
-**[NIT-1] Brief title:** "Default's text size" should be "Default's" → "Default text size" (stray apostrophe in "General and Default's").
-**[NIT-2**] The slider is "8–32 pt in 1 pt steps" while the shipped default is 11.6; the brief handles the display ("stays as it is until it is changed") but never says what the slider thumb shows for a non-integral value (a position between steps, or snapped for display only). One sentence would remove the ambiguity.
+**[NIT-1]** §2 describes the slider as "over 8–32 pt in 1 pt steps" while also requiring the thumb to sit "between steps" at 11.6; fine, but the acceptance criteria (4, 5) never pin the thumb position between steps — a small testable assertion ("thumb at the exact value") is left only in prose.
+
+**[NIT-2]** The two "§8" sections ("Verified facts" and "Verified source excerpts") share a number; renumber for the handoff.
 
 ### Verdict
-BLOCK — 2 blocking finding(s); must resolve before implementation starts.
+PASS — no BLOCK findings; implementation may proceed.
