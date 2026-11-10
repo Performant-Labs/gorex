@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Spec audit: Settings window (issue #1, delivery 1)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --ink:#1c1c1e; --muted:#636366; --line:#d9d9de; --bg:#f6f6f8; --ok:#1a7f37; --warn:#9a6700; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.5 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color:var(--ink); background:var(--bg); }
+  nav { position:sticky; top:0; z-index:5; background:#fff; border-bottom:1px solid var(--line); padding:8px 24px; display:flex; gap:18px; flex-wrap:wrap; }
+  nav a { color:#0a58ca; text-decoration:none; font-size:14px; }
+  main { max-width:1120px; margin:0 auto; padding:24px; }
+  .banner { background:#fff; border:1px solid var(--line); border-left:10px solid var(--ok); border-radius:10px; padding:18px 24px; }
+  .banner .verdict { font-size:40px; font-weight:800; color:var(--ok); letter-spacing:.5px; }
+  .banner p { margin:6px 0 0; color:var(--muted); }
+  h2 { margin:36px 0 10px; font-size:22px; }
+  h3 { margin:24px 0 6px; font-size:17px; }
+  section { margin-bottom:12px; }
+  ul { padding-left:22px; }
+  li { margin:4px 0; }
+  .note { background:#fff8e1; border:1px solid #f0d78c; border-radius:8px; padding:10px 14px; font-size:14px; }
+  .cmp { background:#fff; border:1px solid var(--line); border-radius:10px; padding:16px; margin:14px 0; }
+  .wipe { position:relative; width:760px; max-width:100%; aspect-ratio:760/560; border:1px solid var(--line); background:#fafafa; overflow:hidden; }
+  .wipe img { position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .wipe .top { clip-path:inset(0 50% 0 0); }
+  .wipe .bar { position:absolute; top:0; bottom:0; left:50%; width:2px; background:#0a58ca; pointer-events:none; }
+  .slider { width:760px; max-width:100%; margin:8px 0 2px; }
+  .legend { font-size:13px; color:var(--muted); margin:0 0 10px; }
+  .full { max-width:100%; height:auto; border:1px solid var(--line); display:block; margin:6px 0 14px; }
+  table { border-collapse:collapse; width:100%; background:#fff; font-size:14px; }
+  th, td { border:1px solid var(--line); padding:8px 10px; vertical-align:top; text-align:left; }
+  th { background:#efeff2; }
+  .match { color:var(--ok); font-weight:700; }
+  td img { width:300px; max-width:100%; height:auto; border:1px solid var(--line); display:block; }
+  code { background:#efeff2; padding:1px 5px; border-radius:4px; font-size:13px; }
+</style>
+</head>
+<body>
+<nav>
+  <a href="#verdict">Verdict</a>
+  <a href="#different">What I see different</a>
+  <a href="#general">General</a>
+  <a href="#default">Default</a>
+  <a href="#dark">Dark and minimum size</a>
+  <a href="#sections">Per-section table</a>
+  <a href="#rework">Sub-issues</a>
+</nav>
+<main>
+
+<section id="verdict">
+  <div class="banner">
+    <div class="verdict">PASS</div>
+    <p>Settings window, General and Default's text size, settings v2 (issue #1, delivery 1). Ready for the commit; the live-only checks go to U.</p>
+    <p><strong>Pixel counts:</strong> not computed. GoRex is a native desktop app, not a web page, and the wireframes are annotated mock-ups at another aspect ratio, so a pixel count against them would be noise. The comparison below is by element, side by side. See the audit file <code>handoff-S.md</code>, "Visual-diff-tool precondition".</p>
+  </div>
+</section>
+
+<section id="different">
+  <h2>What I see different</h2>
+  <p>Live render (left or top) against the wireframe (right or underneath). Nothing here is a fault; each item was either asked for in the brief or written down by F.</p>
+  <ul>
+    <li><strong>General page.</strong> The "Later: notifications, confirm before quitting, …" line from the mock-up is not in the window. It is a note about future work.</li>
+    <li><strong>General page.</strong> The "+ New Profile…" link at the bottom of the sidebar is not in the window. The brief says to leave it out until profiles arrive (delivery 2).</li>
+    <li><strong>General page.</strong> The dark half of the System swatch and the Dark swatch are a neutral near-black. The mock-up draws a purple-grey. The window reuses the terminal's own dark colour instead of adding a new one.</li>
+    <li><strong>Default page.</strong> The "8" and "32" tick labels under the slider are not shown. The brief does not ask for them.</li>
+    <li><strong>Default page.</strong> No "Used by N panes" line, no override dot, no "Reset" link, no tick for Default's value on the slider and no "…" menu. Those belong to delivery 2. Default shows only its title, the text-size row and the preview.</li>
+    <li><strong>Default page.</strong> The preview text looks smaller than in the mock-up because the mock-up shows a profile set to 18 pt; Default is at 11.6 pt.</li>
+    <li>Not shown in these images: the real macOS title bar and traffic lights (the window system draws them).</li>
+  </ul>
+  <p class="note">No overlapping, clipped or hidden elements at the normal size (760×560) or the minimum size (640×460), in light or dark.</p>
+</section>
+
+<section id="general">
+  <h2>General page, light, 760×560</h2>
+  <div class="cmp">
+    <p class="legend">Drag the slider: the left part shows the live window, the right part the wireframe (cropped to the window's content and scaled to the same width).</p>
+    <div class="wipe" data-wipe>
+      <img src="screenshots/cycle-1/s-general-760-reference-20261109.png" alt="Wireframe 1, General">
+      <img class="top" src="screenshots/cycle-1/s-general-760-live-20261109.png" alt="Live General page">
+      <div class="bar"></div>
+    </div>
+    <input class="slider" type="range" min="0" max="100" value="50" data-slider aria-label="Wipe between live and wireframe">
+    <h3>Side by side (live, then wireframe)</h3>
+    <img class="full" src="screenshots/cycle-1/s-general-760-composite-20261109.png" alt="Live General next to wireframe 1">
+    <p class="legend">Diff PNG: not produced, see the verdict banner.</p>
+  </div>
+</section>
+
+<section id="default">
+  <h2>Default page, light, 760×560</h2>
+  <div class="cmp">
+    <p class="legend">The wireframe here (number 2) is a profile called "Presenting". Only its text-size row and preview apply to Default.</p>
+    <div class="wipe" data-wipe>
+      <img src="screenshots/cycle-1/s-default-760-reference-20261109.png" alt="Wireframe 2, a profile page">
+      <img class="top" src="screenshots/cycle-1/s-default-760-live-20261109.png" alt="Live Default page">
+      <div class="bar"></div>
+    </div>
+    <input class="slider" type="range" min="0" max="100" value="50" data-slider aria-label="Wipe between live and wireframe">
+    <h3>Side by side (live, then wireframe)</h3>
+    <img class="full" src="screenshots/cycle-1/s-default-760-composite-20261109.png" alt="Live Default next to wireframe 2">
+    <p class="legend">Diff PNG: not produced, see the verdict banner.</p>
+  </div>
+</section>
+
+<section id="dark">
+  <h2>Dark appearance, and the minimum window size</h2>
+  <p>There are no wireframes for these, so these are the live renders only. Use them to check legibility.</p>
+  <div class="cmp">
+    <h3>General, dark, 760×560</h3>
+    <img class="full" src="screenshots/cycle-1/s-general-dark-760-live-20261109.png" alt="Live General page in dark">
+    <h3>Default, dark, 760×560</h3>
+    <img class="full" src="screenshots/cycle-1/s-default-dark-760-live-20261109.png" alt="Live Default page in dark">
+    <h3>Default, light, 640×460 (the smallest the window can be)</h3>
+    <img class="full" src="screenshots/cycle-1/s-default-640-live-20261109.png" alt="Live Default page at the minimum size">
+  </div>
+</section>
+
+<section id="sections">
+  <h2>Per-section table</h2>
+  <table>
+    <thead><tr><th>Section</th><th>View</th><th>Status</th><th>Description</th><th>Crop</th></tr></thead>
+    <tbody>
+      <tr><td>Sidebar</td><td>760, light</td><td class="match">MATCH</td><td>General, PROFILES heading, Default with "built-in". No "+ New Profile…", as the brief says.</td><td><img src="screenshots/cycle-1/s-general-sidebar-760-crop-20261109.png" alt="Sidebar crop"></td></tr>
+      <tr><td>Appearance choices</td><td>760, light</td><td class="match">MATCH</td><td>Three swatches with names; System has the blue ring on first launch. The dark shade is a neutral near-black.</td><td><img src="screenshots/cycle-1/s-general-appearance-760-crop-20261109.png" alt="Appearance crop"></td></tr>
+      <tr><td>Footer</td><td>760, light</td><td class="match">MATCH</td><td>"Changes apply and save as you make them." at the bottom.</td><td><img src="screenshots/cycle-1/s-general-footer-760-crop-20261109.png" alt="Footer crop"></td></tr>
+      <tr><td>Text size row</td><td>760, light</td><td class="match">MATCH</td><td>Minus, slider, plus and "11.6 pt". The 8 and 32 labels are not shown; the brief does not ask for them.</td><td><img src="screenshots/cycle-1/s-default-textsize-760-crop-20261109.png" alt="Text size row crop"></td></tr>
+      <tr><td>Live preview</td><td>760, light</td><td class="match">MATCH</td><td>Three lines of terminal text in the current appearance, at the chosen size.</td><td><img src="screenshots/cycle-1/s-default-preview-760-crop-20261109.png" alt="Preview crop"></td></tr>
+    </tbody>
+  </table>
+  <p class="legend">The crops are cut from the live renders. The wireframes are not pixel references, so there is no red-overlay diff to crop from.</p>
+</section>
+
+<section id="rework">
+  <h2>Sub-issue recommendations</h2>
+  <p>None: the verdict is PASS. Items for U to walk live, and small follow-ups, are listed under "Advisory notes" in <code>handoff-S.md</code>. In short: the Dock reopen with only Settings open, Windows keys, the palette's "Settings…" and the real look of the selection ring; and, later, a role and selected state on the sidebar entries.</p>
+</section>
+
+</main>
+<script>
+  // Wipe slider: the top image shows the live window up to the slider; the rest shows the wireframe.
+  document.querySelectorAll('[data-wipe]').forEach(function (box) {
+    var top = box.querySelector('.top'), bar = box.querySelector('.bar');
+    var slider = box.parentNode.querySelector('[data-slider]');
+    function set() {
+      var v = Number(slider.value);
+      top.style.clipPath = 'inset(0 ' + (100 - v) + '% 0 0)';
+      bar.style.left = v + '%';
+    }
+    slider.addEventListener('input', set);
+    set();
+  });
+</script>
+</body>
+</html>
