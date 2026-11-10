@@ -1,28 +1,30 @@
 ## Brief Review (Round 1)
 
 ### BLOCK findings
-**[B-1]** Acceptance criterion 6 contradicts the clamping rule. AC6 states "A v1 file migrates to v2 on first load: appearance and text size are unchanged", and §1 states "A user's appearance and text size look exactly the same after the migration." But §1 also states "Today loading accepts 6–40 while `setFontSize` clamps to 8–32, so a v1 value outside 8–32 is clamped on load" — for a v1 file with, say, `fontSize: 40`, the text size is *not* unchanged and does not look the same. AC5 reinforces the clamping. Two parts of the brief disagree, making AC6 untestable as written. Fix: AC6 should read "unchanged, except that a value outside 8–32 is clamped per criterion 5" (and §1's "exactly the same" softened likewise), or the brief must pick one behavior.
+
+**[B-1]** §3 says "**No guard is needed**" for headless `SetChecked` in tests, but §8's verified-source note on `SetChecked` says the opposite: "whether the post is safe under `go test` after `menu()` ran is not verified here, **hence the guard in §3**." — Two parts of the brief directly disagree: §3 instructs tests to build `a.menu()`, keep the items, and call `SetChecked` with no guard, while the evidence note that §3 cites concludes a guard is needed and even claims §3 contains one. Criterion 12 makes these tests mandatory, so the disagreement lands in required test code. — Resolve whether `postMain` after `menu()` is safe under `go test`, state one answer, and make §3 and §8 say the same thing.
+
+**[B-2]** Criterion 11 and §4 "App lifecycle" are contradicted by the shown code. The brief asserts "the reopen depends on `a.win == nil` alone," but `main.go:46-50` (shown) is `if !hasVisibleWindows && a.win == nil { a.open() }` — the reopen today depends on `!hasVisibleWindows` too. With Settings open and the main window closed, `hasVisibleWindows` is true, so today's `OnActivate` would NOT reopen the main window. — Satisfying criterion 11 therefore requires changing `main.go:46-50` to drop the `hasVisibleWindows` condition (or otherwise special-case reopen), but §5 "Reuse & extend-vs-new" lists no such change to `OnActivate`. The brief must state the `OnActivate` change explicitly and confirm it does not regress the "no window at all → reopen on Dock click" and "app quit when all windows closed" paths.
 
 ### Needs-verification findings
-**[NV-1]** "Today loading accepts 6–40 while `setFontSize` clamps to 8–32" — the load-time validation range in `settings.go` (the current load code) and the clamp in `setFontSize`, shown as file:line excerpts.
-**[NV-2]** "Native-UI windows run no menu shortcuts on Windows (`shortcuts()` in `commands.go`)" and "Ctrl+, reaches the main window through the existing `command` table loop in `shortcuts()`" — the shown body of `shortcuts()` in `commands.go`, confirming it iterates the `command` table so `cmdSettings` is picked up with no hand-written case.
-**[NV-3]** "mygo's darwin surface does not override `performKeyEquivalent`, and the macOS Window menu role has no Close item" (§4) — the mygo darwin surface source and the default role menu construction; this underpins all of AC10's macOS claims.
-**[NV-4]** "`{Role: mygo.RoleAppMenu}` uses mygo's default submenu, and mygo replaces it only when `Submenu` is set" (§5 Menu placement) — mygo's menu-building code for roles.
-**[NV-5]** "`MenuItem.SetChecked` … if `SetChecked` cannot run under `go test` (no backend), guard it" — the mygo `SetChecked` implementation, confirming whether it panics or no-ops headless; the guard may be unnecessary or insufficient.
-**[NV-6]** "`mygo.NewWindow` off the main thread waits for `App.waitReady`" and that `StateKey "settings"` is a supported `WindowOptions` field — mygo's `NewWindow` source and the `WindowOptions` struct definition.
-**[NV-7]** "In legacy terminal encoding Ctrl+, sends nothing" (the README exception rationale) — a terminal-encoding reference (e.g. the control-character table showing 0x2C maps to no C0 control code) confirming Ctrl+, is unrepresentable.
-**[NV-8]** "`OnActivate` reopens the main window only when `!hasVisibleWindows && a.win == nil`" and "`App.run`'s 'no main window' exception … covers only New Tab" — the shown excerpts of `main.go` / `run` matching these descriptions, since AC10–11 depend on the described current behavior.
-**[NV-9]** "⌘W in Settings would run Close Pane … and ⌘T, ⌘D and ⌘K would act on the hidden main window" — `item()`'s `Click` signature in `commands.go` shown ignoring the `*mygo.Window`, confirming the hazard is real.
-**[NV-10]** `attach`'s display-only terminal (`terminal.New`, `nopConn{}`, `Feed`) and `ui.NewTester`/`TestPaletteScrolls` exist and behave as "REUSE" assumes — shown excerpts from the relevant files.
+
+**[NV-1]** That `ui.KeyComma` exists in mygo's `ui` package and that adding it to `shortcut.String()`'s key-name map produces "," — the ui package's key constants are not excerpted; a `ui` keys source excerpt (or the `plugins/terminal/keys.go` mapping cited in Source material) would settle it.
+
+**[NV-2]** That Ctrl+, in legacy terminal encoding sends nothing on Windows (the claimed basis for the README exception) — evidence would be the same source the existing Ctrl+=/Ctrl− exception cites (README's existing note or the encoding tables it references).
+
+**[NV-3]** The §8 mygo facts: `menu.go:243-264` `SetChecked`/`update` posts without waiting; `app.go:591` macOS menu click window is `FocusedWindow()`; no `performKeyEquivalent` override in `internal/darwin` outside `testhooks.go:58`; `menu.go:325-327` role submenu only filled when unset; `menu.go:507-508` `RoleClose` closes the clicked window; `window.go` Focus/Close/`NewWindow` blocking headless; `loop.go:87-100` `onMain` waits. None of these lines' text is in this prompt (only the repo excerpts are), so each remains a hypothesis at this gate — showing the corresponding mygo source lines would settle them.
 
 ### WARN findings
-**[W-1]** The 8–32 slider with 1 pt steps cannot represent the shipped default 11.6 pt. The brief's answer ("a value that is not a whole number stays as it is until it is changed") tells the label what to show but not the slider thumb what to display at 11.6, nor which whole value a click/drag commits first. Recommend specifying: the thumb sits at floor/round(11.6), and the first drag commits the slider's whole value. Otherwise AC1's "Default" page renders in an under-specified state.
-**[W-2]** AC9 covers Esc and Ctrl+W on Windows only; macOS Esc behavior for the Settings window (and whether Cmd+W is the close path per §4, which it is) is fine, but the non-macOS Ctrl+Shift+W "Close Pane" item vs Ctrl+W on Settings is asserted in §4 without an acceptance criterion covering Linux. AC10 partially covers it; recommend making it explicit that Ctrl+W closing Settings is tested on all platforms where it applies.
-**[W-3]** §6 Write gate says an invalid file makes the app "run on defaults", while §1 Robustness says an invalid file "must not destroy the user's file". If the app runs on defaults and any subsequent setting change calls `saveSettings()`, the read-only gate must hold for the *session*, not just the load. Recommend the brief state explicitly that read-only status persists until a successful load of a writable file, and that AC8's "never loses the user's file" is tested with a post-load settings mutation.
+
+**[W-1]** Ctrl+, with Settings focused on Windows. Criterion 2 requires Ctrl+, on Windows to "open Settings, or bring the open window to the front." On Windows the main window's `shortcuts()` loop only runs while the main window has key focus, and the brief gives the Settings window only Esc and Ctrl+W handling (§2, criterion 9); the menu bar does not run shortcuts in native-UI windows on Windows (§2). So with Settings frontmost on Windows, nothing is described that handles Ctrl+,. — Specify (and add to criterion 9 or a new criterion) that the Settings window's own key handling includes Ctrl+, to bring itself to front.
+
+**[W-2]** Criterion 5 ("clamped to 8–32 everywhere, including when loading") is in tension with the v1-missing-`fontSize` rule (migrates to 11.6, "not clamped up to 8") and with criterion 6's exceptions; the exceptions are stated, but criterion 5 reads absolute. Reword criterion 5 as "clamped to 8–32 everywhere, except as provided by criterion 6" to avoid an unmeetable acceptance test.
+
+**[W-3]** Acceptance has no criterion covering the README change (recording the Ctrl+, Shift-rule exception) or the new source file's README Layout-table entry, both of which the brief mandates in §2 and §5. Add them to the acceptance list or accept they are diff-gate checks.
 
 ### NIT findings
-**[NIT-1]** The example v2 JSON shows `"fontSize": 11.6` while the slider is whole-point stepped; a comment noting non-whole values persist until changed would help implementers.
-**[NIT-2]** "`+ New Profile…` footer is delivery 2: leave it out" vs wireframe 1 which presumably shows it — call out explicitly that wireframe 1 should be read with the footer cropped/ignored, so the implementer doesn't ship it from the image.
+
+**[NIT-1]** "Default's" in the brief's title should be "Default's"→"Default text size" (stray apostrophe) — cosmetic only.
 
 ### Verdict
-BLOCK — 1 blocking finding; must resolve before implementation starts.
+BLOCK — 2 blocking finding(s); must resolve before implementation starts.

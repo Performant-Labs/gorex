@@ -71,10 +71,16 @@ Wireframes, committed in this branch:
 - **Windows.** Native-UI windows run no menu shortcuts on Windows (`shortcuts()` in `commands.go`). Ctrl+,
   reaches the main window through the existing `command` table loop in `shortcuts()` (see "Reuse &
   extend-vs-new": no hand-written case). The Settings window needs its own Esc and Ctrl+W handling to
-  close it.
+  close it. Because `shortcuts()` runs only in the main window's view, the Settings window's own key
+  handling on Windows also handles **Ctrl+,** (`cmdSettings.Other`): it calls `openSettings()`, which
+  focuses the one Settings window and never makes a second (criteria 2 and 9).
 - Ctrl+, on Windows and Linux breaks the README's rule that GoRex shortcuts take Shift, under the same
   exception as Ctrl+= and Ctrl+- for text size: in legacy terminal encoding Ctrl+, sends nothing. Record
-  this exception in README.md next to the existing one.
+  this exception in README.md next to the existing one. "The existing one" is the Ctrl+= Ctrl+- Ctrl+0 row
+  of the Shortcuts table (`README.md:54`), which goes without Shift; the rule itself is the paragraph at
+  `README.md:57-60` (excerpt in §8), and today no sentence there names the text-size exception. Add the
+  Ctrl+, row to the table and a sentence to that paragraph naming Ctrl+, together with Ctrl+= Ctrl+-
+  Ctrl+0 as the shortcuts that go without Shift, and why (criterion 13).
 - **Sidebar.** **General**, then the **PROFILES** heading with one entry, **Default** with the label
   "built-in". The "+ New Profile…" footer is delivery 2: leave it out. Wireframe 1 draws that footer
   (bottom of the sidebar, note 4); read the wireframe with it ignored, and do not ship it from the image.
@@ -100,7 +106,10 @@ Wireframes, committed in this branch:
   radio items, which `App` keeps when `menu()` builds them, and `Invalidate()` the Settings window when it
   is open. `a.do` redraws only the main window, so it is not enough on its own. `menu()` and `SetChecked`
   are safe headless: `SetChecked` changes `Checked` at once and only queues the native update (§8). So
-  tests build `a.menu()`, keep the three Appearance items, and assert `IsChecked()`. No guard is needed.
+  tests build `a.menu()`, keep the three Appearance items, and assert `IsChecked()`. No guard is needed:
+  the queued update is a `postMain`, which does not wait, and a probe on the pinned mygo under `go test`
+  showed `SetChecked` returning on items built by `NewMenu` with `IsChecked()` already updated (§8,
+  "`SetChecked` headless").
 - **One spelling of System.** In memory and in the file, System is `"system"`. Change `cmdSystem`
   (`commands.go`) and the menu's `appearance("System", "")` to pass `"system"`. Normalise `""` only in the
   v1 migration, so the menu check, the Settings selection and the file always agree.
@@ -134,9 +143,24 @@ would act on the hidden main window.
   drains (`view.go`). `settingsView` calls `setAppearance` and `setFontSize` directly, and never posts into
   that queue or assigns `a.services`.
 - **App lifecycle.** `OnActivate` reopens the main window only when `!hasVisibleWindows && a.win == nil`
-  (`main.go`). With Settings open and the main window closed, clicking the Dock icon must still bring the
-  main window back: the reopen depends on `a.win == nil` alone. Settings-window state lives on `App`
-  outside `App.reset()`, which clears only per-main-window state.
+  (`main.go:46-50`). With Settings open and the main window closed, `hasVisibleWindows` is true, so today's
+  handler would **not** reopen the main window. With Settings open and the main window closed, clicking
+  the Dock icon must still bring the main window back, so **change `main.go:46-50`** to drop the
+  `hasVisibleWindows` condition: the handler becomes `if a.win == nil { a.open() }` (the parameter stays
+  in the signature, unused). The reopen then depends on `a.win == nil` alone. This regresses no other
+  path:
+  - **No window at all** (Dock click after the main window closed, Settings not open): `hasVisibleWindows`
+    is false and `a.win == nil`, so it reopens, as today.
+  - **Main window open** (visible, hidden or minimized): `a.win != nil`, so it opens nothing, as today.
+  - **App quits when all windows close**: that is `OnWindowAllClosed` (`main.go:51-55`), which this
+    change does not touch. It quits only off darwin, and `OnActivate` fires only on darwin: its only
+    caller is `applicationShouldHandleReopen:hasVisibleWindows:` (mygo `internal/darwin/app.go:305-306`).
+    Off darwin, closing the main window while Settings is open leaves the app running until Settings
+    also closes, and then `OnWindowAllClosed` quits it.
+  - **⌘-Tab / app activation**: `applicationShouldHandleReopen` fires on a Dock click or reopen, not on
+    every activation, so ⌘-Tab does not reopen the main window (handoff-A round 2, R1 warn 10).
+
+  Settings-window state lives on `App` outside `App.reset()`, which clears only per-main-window state.
 
 ### 5. Reuse & extend-vs-new
 
@@ -151,6 +175,9 @@ would act on the hidden main window.
   when `Submenu` is set. So on darwin, write the app menu out in full: About, Settings…, Services, Hide,
   Hide Others, Show All, Quit. Add Edit ▸ Settings… only off darwin, with the same `runtime.GOOS`
   branching `menu()` already uses.
+- **EXTEND** the `OnActivate` handler in `main()` (`main.go:46-50`): drop `!hasVisibleWindows &&` so it
+  reopens the main window whenever `a.win == nil`, including when Settings is the only open window (§4
+  "App lifecycle", criterion 11). No other lifecycle handler changes.
 - **FOLLOW** `App.open` (`main.go`) to create the Settings window: `mygo.WindowOptions` with
   `Content: ui.View(...)`, and `OnClosed` clearing the field.
 - **REUSE** `attach`'s display-only terminal for the live preview: `terminal.New` with `nopConn{}`,
@@ -256,9 +283,90 @@ The claims above, checked against this branch and against mygo
   and `roleSubmenu(RoleAppMenu)` is About, Services, Hide, Hide Others, Show All, Quit (`menu.go:621-632`).
 - **`SetChecked` headless** (§3): `SetChecked` calls `update` (`menu.go:219-226`), which touches the
   backend only when the item has a `uid`, set by `prepareItem` when `NewMenu` builds it (`menu.go:247-264`,
-  `302-308`); it then posts to the main loop, whose first post calls `backend().Signal()`
-  (`loop.go:18-31`). So an `App` whose `menu()` never ran has no items to call; whether the post is safe
-  under `go test` after `menu()` ran is not verified here, hence the guard in §3.
+  `302-308`). `update` changes the item under the lock, then hands the native update to `postMain`
+  without waiting (`menu.go:243-264`, abridged):
+
+      243	func (it *MenuItem) update(fn func()) {
+      244		menuMu.Lock()
+      245		fn()
+      ...
+      258		if len(snaps) > 0 {
+      259			postMain(func() {
+      260				for _, s := range snaps {
+      261					backend().UpdateMenuItem(s)
+
+  `postMain` is `loop.post` (`loop.go:81-82`), which appends to the queue and, on the first post, calls
+  `backend().Signal()` and returns (`loop.go:19-31`); unlike `onMain` (`loop.go:87-100`) it never waits.
+  **Verified safe under `go test` after `NewMenu` ran:** the probe
+  (`scratchpad/mygoprobe/probe_test.go`, re-run for this amendment) builds radio items with
+  `mygo.NewMenu`, calls `SetChecked(true)` on one and reports `SetChecked(dark): returned` and
+  `after SetChecked: light=false dark=true`. So §3 needs no guard: tests call `a.menu()` and
+  `SetChecked`, and assert `IsChecked()`. The probe ran on darwin only; Linux and Windows share the
+  same `update` / `postMain` path in `menu.go` and `loop.go`.
+- **`onMain` waits** (§6, §8 list): `loop.go:87-100`:
+
+      87	func onMain(fn func()) {
+      88		if isMainThread() {
+      89			fn()
+      90			return
+      91		}
+      92		done := make(chan struct{})
+      93		if !loop.post(func() {
+      ...
+      99		<-done
+      100	}
+
+  `init` locks the main goroutine to the main thread (`mygo.go:72-75`, `runtime.LockOSThread()`), so a
+  test goroutine is never on it and waits on `<-done` forever. The same probe reports
+  `Theme.SetSource(dark): BLOCKED (>3s)`, `(&mygo.Window{}).Focus(): BLOCKED (>3s)` and
+  `(&mygo.Window{}).Invalidate(): returned`.
+- **`Focus`, `Close`, `Invalidate`** (§6): `window.go:513-519` is `func (w *Window) do(fn func(n
+  platform.Window)) { onMain(func() { … }) }`; `window.go:607` is
+  `func (w *Window) Focus() { w.do(platform.Window.Focus) }`; `window.go:534` is
+  `func (w *Window) Close() { onMain(func() { w.close() }) }`. `content.go:145-148`: `Invalidate` returns
+  when `w.content == nil`, before its `postMain`.
+- **macOS menu click's window** (§4): `app.go:591`:
+
+      591	func (appHandler) MenuItemClicked(id int)        { menuItemClicked(id, FocusedWindow()) }
+
+- **`RoleClose`** (§4): `performRole` (`menu.go:507-508`):
+
+      507		case RoleClose:
+      508			win.close()
+
+- **`OnActivate` is darwin-only** (§4 "App lifecycle"): `Application.OnActivate` (`app.go:443-444`) adds
+  to `onActivate`, which `appHandler.Activated` fires (`app.go:576-577`); the only caller of `Activated`
+  in the module is `internal/darwin/app.go:305-306`:
+
+      305	method("applicationShouldHandleReopen:hasVisibleWindows:", func(self id, _ objc.SEL, app id, visible bool) bool {
+      306		theBackend.h.Activated(visible)
+
+  GoRex's handler today (`main.go:46-50`):
+
+      46	mygo.App.OnActivate(func(hasVisibleWindows bool) {
+      47		if !hasVisibleWindows && a.win == nil {
+      48			a.open()
+      49		}
+      50	})
+
+- **`ui.KeyComma`** (§5): mygo's `ui/keys.go:45` declares `KeyComma` in the `Key` constants, next to
+  `KeyMinus` and `KeyEqual` (`:43-44`), which `shortcut.String()` already maps (`commands.go:120`). The
+  terminal plugin maps it to the character `,` (`plugins/terminal/keys.go:21`: `ui.KeyComma: …, ','}`).
+  So `ui.KeyComma: ","` in `shortcut.String()`'s key names gives the accelerator `Ctrl+,`, and `,` is a
+  valid accelerator key (handoff-A round 2, `internal/accelerator`).
+- **README's Shift rule** (§2): `README.md:54` and `:57-60`:
+
+      54	| ⌘+ ⌘− ⌘0 | Ctrl+= Ctrl+- Ctrl+0 | Text size |
+      ...
+      57	Elsewhere than on macOS, Control and a letter are the terminal's (Ctrl+C,
+      58	Ctrl+D, Ctrl+W…), so GoRex's shortcuts take Shift too, as copying and
+      59	pasting do (Ctrl+Shift+C, Ctrl+Shift+V), and none take Control and Alt,
+      60	which type characters (AltGr) on many keyboards.
+
+  The claim that Ctrl+, sends nothing in legacy terminal encoding is issue #1's ("Ctrl+, on Windows and
+  Linux"). It is not verified against source here: mygo's terminal encodes keys through Ghostty's native
+  library (`plugins/terminal/internal/vt/encode.go`, `KeyEncoder`), whose legacy tables are not in the
+  Go module.
 - **`NewWindow` and `StateKey`** (§6): off the main thread `NewWindow` calls `App.waitReady()`
   (`window.go:294-295`). `WindowOptions.StateKey string` is a field (`window.go:153-160`), already used by
   `App.open` (`main.go:98`).
@@ -297,7 +405,8 @@ profile-related palette entries; overrides, Reset and inheritance UI.
    same choice. A change from the menu or the palette shows in an open Settings window.
 4. Changing Default's text size (slider, −, +) changes every pane immediately and is saved. ⌘+, ⌘− and ⌘0
    still work as today, and an open Settings window follows them.
-5. The value is clamped to 8–32 everywhere, including when loading.
+5. The value is clamped to 8–32 everywhere, including when loading, except as provided by criterion 6: a
+   v1 file with no `fontSize` has no value to clamp, and migrates to 11.6 (§1 "v1 without `fontSize`").
 6. A v1 file migrates to v2 on first load: appearance and text size are unchanged (`""` becomes
    `"system"`), except that a text size outside 8–32 is clamped per criterion 5 and a missing text size
    becomes 11.6, and the original file is kept byte for byte as `settings.v1.json`.
@@ -305,14 +414,19 @@ profile-related palette entries; overrides, Reset and inheritance UI.
    is restored.
 8. Settings survive a restart. A missing, invalid or newer-version file never crashes the app or loses the
    user's file, including after a setting is changed later in the same run (§6 "Write gate").
-9. On Windows, Esc and Ctrl+W close the Settings window.
+9. On Windows, Esc and Ctrl+W close the Settings window, and Ctrl+, with Settings focused keeps that one
+   window in front without opening a second (§2 "Windows").
 10. ⌘W (Ctrl+W on Windows and Linux) with Settings frontmost closes Settings and closes no pane. ⌘T, ⌘D
     and ⌘K with Settings frontmost do not act on the hidden main window.
 11. GoRex ▸ Settings… works after the main window is closed, and clicking the Dock icon with only
-    Settings open brings the main window back.
+    Settings open brings the main window back (the `OnActivate` change, §4 "App lifecycle"). Clicking the
+    Dock icon with no window open still reopens the main window, clicking it with the main window open
+    opens no second one, and off darwin the app still quits when its last window closes.
 12. `go vet ./...` and `go test -count=1 -race ./...` pass. New behaviour that can be tested without a
     window (the v2 format, migration, clamping, restoring Default, single-window bring-to-front logic,
     menu and Settings state staying in step) has tests that fail if the behaviour is removed.
+13. README.md records Ctrl+, in the Shortcuts table and names it, with Ctrl+= Ctrl+- Ctrl+0, as an
+    exception to the Shift rule (§2), and its Layout table lists the new Settings source file (§5 "NEW").
 
 ## Rigor
 
@@ -327,3 +441,15 @@ second-opinion
 - `docs/wireframes/settings-profiles/1-general.png` and `.svg`, `2-profile-overrides.png` and `.svg`, `gen.py`
 - mygo `v0.3.5-0.20261008155018-bad73d119dc8`: `menu.go`, `loop.go`, `window.go` (`WindowOptions.StateKey`,
   `NewWindow`), `plugins/terminal/keys.go`, and a search of `internal/darwin` for `performKeyEquivalent`
+- Round 2 amendment (brief review round 1 findings): `docs/handoffs/0001-settings-window/decisions.md` and
+  `handoff-A.md` (re-read); `main.go`, `settings.go`, `commands.go`, `README.md`, `style.go` (re-read in
+  full); `state.go:100-140` and `:190-260`, `view.go:15-30`, `app_test.go:40-75` and `:295-337`; issue #1
+  (re-read); mygo `menu.go` (`SetChecked`, `update`, `prepareItem`, `performRole`, `roleSubmenu`,
+  `MenuItem.Click` docs), `loop.go` (all), `app.go:315-325`, `:438-445`, `:576-577`, `:585-595`,
+  `mygo.go:70-76`, `window.go:510-540` and `:607-615`, `content.go:145-153`, `ui/keys.go:40-50`,
+  `plugins/terminal/keys.go` (all), `plugins/terminal/internal/vt` (search of `encode.go` and `vt_test.go`
+  for the legacy Ctrl encoding: not found in Go source), `internal/darwin/app.go:159-164` and `:300-310`, and
+  a search of the module for callers of `Activated` and `OnActivate`
+- The headless probe `scratchpad/mygoprobe/probe_test.go` (session scratchpad of the architecture review),
+  read and re-run with `go test -count=1 -v`
+- Not re-read for this amendment: the wireframes and `gen.py` (no finding concerns them)
