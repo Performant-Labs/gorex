@@ -78,10 +78,17 @@ Wireframes, committed in this branch:
 - The palette gets a **"Settings…"** command.
 - **Windows.** Native-UI windows run no menu shortcuts on Windows (`shortcuts()` in `commands.go`). Ctrl+,
   reaches the main window through the existing `command` table loop in `shortcuts()` (see "Reuse &
-  extend-vs-new": no hand-written case). The Settings window needs its own Esc and Ctrl+W handling to
-  close it. Because `shortcuts()` runs only in the main window's view, the Settings window's own key
-  handling on Windows also handles **Ctrl+,** (`cmdSettings.Other`): it calls `openSettings()`, which
-  focuses the one Settings window and never makes a second (criteria 2 and 9).
+  extend-vs-new": no hand-written case). The Settings window needs its own Esc, Ctrl+W and
+  **Ctrl+Shift+W** handling to close it. Ctrl+Shift+W is Close Pane's shortcut there
+  (`cmdClosePane.Other`, `ctrlShift(ui.KeyW)`, `commands.go:32`); on Linux and macOS it reaches Settings
+  as Close Pane's menu accelerator and the §4 window check makes it close Settings, but on Windows no menu
+  shortcut runs in a native-UI window, so Settings' own key handling must match it and close the window
+  through `closeWindow` (§6), exactly as for Esc and Ctrl+W (criteria 9 and 10). Because `shortcuts()`
+  runs only in the main window's view, the Settings window's own key handling on Windows also handles
+  **Ctrl+,** (`cmdSettings.Other`): it calls `openSettings()`, which focuses the one Settings window and
+  never makes a second (criteria 2 and 9). On Windows Settings' own key handling handles exactly these
+  four keys (Esc, Ctrl+W, Ctrl+Shift+W, Ctrl+,); every other command shortcut, such as Ctrl+Shift+T, does
+  nothing while Settings is focused there.
 - Ctrl+, on Windows and Linux breaks the README's rule that GoRex shortcuts take Shift, under the same
   exception as Ctrl+= and Ctrl+- for text size: in legacy terminal encoding Ctrl+, sends nothing. Record
   this exception in README.md next to the existing one. "The existing one" is the Ctrl+= Ctrl+- Ctrl+0 row
@@ -134,19 +141,23 @@ would act on the hidden main window.
   menu bar was used.
 - **One window check, one classification.** Add a field to the `command` table, next to `Hidden`, that
   marks a command **app-wide**: it runs whatever window is in front, and also when there is no main window.
-  The app-wide commands are Settings…, New Tab (as today, it opens or brings the main window to the front
-  first), Bigger Text, Smaller Text, Actual Size, the three Appearance commands, Quit and End All Sessions.
+  The app-wide commands are Settings…, New Tab (it opens the main window when it is closed, as today, and
+  otherwise brings the main window to the front before it opens the tab, so from Settings it never acts on
+  a hidden main window: the user sees the main window come forward with the new tab; criterion 10), Bigger Text, Smaller Text, Actual Size, the three Appearance commands, Quit and End All Sessions.
   Every other command, including the palette, needs the main window. One helper decides whether a command
   runs for the window a click came from. `item()` uses it, the Show Tab 1–9 items (built today without
   `item()`) use it too, so ⌘1–⌘9 in Settings do nothing, and `App.run` uses the same field in place of its
   New Tab–only exception. App-wide commands run directly, not through `a.do`, which drops work when
   `a.win == nil`.
 - When the click came from the Settings window, Close Pane's item (⌘W on macOS, Ctrl+Shift+W elsewhere)
-  closes Settings. No command that needs the main window acts on it from Settings.
+  closes Settings. That covers macOS and Linux, where the menu delivers the accelerator. On Windows,
+  where native-UI windows run no menu shortcuts, Ctrl+Shift+W reaches neither the menu nor `shortcuts()`
+  from Settings, so Settings' own key handling closes Settings on it (§2 "Windows"). No command that
+  needs the main window acts on it from Settings.
 - **The menu bar off darwin.** `Application.SetMenu` gives every window, Settings included, the full app
   menu bar on Linux and Windows. That is intended: its items go through the same window check. On Linux,
   Ctrl+W in Settings reaches Window ▸ Close Window (`RoleClose` closes the window it was clicked in). On
-  Windows, Settings handles Esc and Ctrl+W itself (§2).
+  Windows, Settings handles Esc, Ctrl+W and Ctrl+Shift+W itself (§2).
 - **Settings' own queue.** `a.post`, `a.later` and `laterService` feed a queue that only the main view
   drains (`view.go`). `settingsView` calls `setAppearance` and `setFontSize` directly, and never posts into
   that queue or assigns `a.services`.
@@ -427,13 +438,17 @@ profile-related palette entries; overrides, Reset and inheritance UI.
    user's file, including after a setting is changed later in the same run (§6 "Write gate").
    If the `settings.v1.json` backup cannot be written, the v1 file is left as it was (§1 "A failed backup
    stops the migration").
-9. On Windows, Esc and Ctrl+W close the Settings window, and Ctrl+, with Settings focused keeps that one
-   window in front without opening a second (§2 "Windows").
+9. On Windows, Esc, Ctrl+W and Ctrl+Shift+W close the Settings window, and Ctrl+, with Settings focused
+   keeps that one window in front without opening a second (§2 "Windows").
 10. With Settings frontmost, its close shortcuts close Settings and close no pane: ⌘W on macOS; on
     Windows, Ctrl+W and Esc (Settings' own handling, §2); on Linux, Ctrl+W (Window ▸ Close Window,
-    `RoleClose`); and on Windows and Linux, Ctrl+Shift+W (Close Pane's shortcut there, which from Settings
-    closes Settings, §4). With Settings frontmost, ⌘T, ⌘D, ⌘K and ⌘1–⌘9 (their Ctrl+Shift equivalents
-    elsewhere) do not act on the hidden main window.
+    `RoleClose`); and on Windows and Linux, Ctrl+Shift+W (Close Pane's shortcut there: on Linux through
+    Close Pane's menu item, which from Settings closes Settings, §4; on Windows through Settings' own key
+    handling, §2). With Settings frontmost, ⌘D, ⌘K and ⌘1–⌘9 (their Ctrl+Shift equivalents elsewhere) do
+    not act on the hidden main window. ⌘T (Ctrl+Shift+T on Linux) never acts on a hidden main window
+    either: New Tab is app-wide (§4), so it first opens the main window if it is closed or brings it to
+    the front, and only then opens the tab there. On Windows, Ctrl+Shift+T with Settings focused does
+    nothing (§2 "Windows").
 11. GoRex ▸ Settings… works after the main window is closed, and clicking the Dock icon with only
     Settings open brings the main window back (the `OnActivate` change, §4 "App lifecycle"). Clicking the
     Dock icon with no window open still reopens the main window, clicking it with the main window open
@@ -469,3 +484,8 @@ second-opinion
 - The headless probe `scratchpad/mygoprobe/probe_test.go` (session scratchpad of the architecture review),
   read and re-run with `go test -count=1 -v`
 - Not re-read for this amendment: the wireframes and `gen.py` (no finding concerns them)
+- Round 3 amendment (brief review round 1 of this gate, findings B-1 and B-2): `brief.md`, `decisions.md`
+  and `handoff-A.md` (re-read in full); `commands.go` and `main.go` (re-read in full: `cmdClosePane.Other`
+  is `ctrlShift(ui.KeyW)` at `commands.go:32`, `cmdNewTab` at `:29`, `run`'s New Tab exception at
+  `:214-226`, `shortcuts()` at `:321-344`); `settings.go` (re-read in full); `README.md:40-70`;
+  `view.go:1-60`; `go.mod`; `docs/handoffs/0001-settings-window/evidence/mygoprobe/output.txt`
