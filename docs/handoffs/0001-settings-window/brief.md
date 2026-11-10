@@ -98,8 +98,9 @@ Wireframes, committed in this branch:
 - **Where the syncing happens.** `App.setAppearance` and `App.setFontSize` are the only writers (see
   "Reuse & extend-vs-new"). After writing, they call `MenuItem.SetChecked` on the three View ▸ Appearance
   radio items, which `App` keeps when `menu()` builds them, and `Invalidate()` the Settings window when it
-  is open. `a.do` redraws only the main window, so it is not enough on its own. If `SetChecked` cannot run
-  under `go test` (no backend), guard it so a headless `App` with no menu skips it.
+  is open. `a.do` redraws only the main window, so it is not enough on its own. `menu()` and `SetChecked`
+  are safe headless: `SetChecked` changes `Checked` at once and only queues the native update (§8). So
+  tests build `a.menu()`, keep the three Appearance items, and assert `IsChecked()`. No guard is needed.
 - **One spelling of System.** In memory and in the file, System is `"system"`. Change `cmdSystem`
   (`commands.go`) and the menu's `appearance("System", "")` to pass `"system"`. Normalise `""` only in the
   v1 migration, so the menu check, the Settings selection and the file always agree.
@@ -112,11 +113,26 @@ not override `performKeyEquivalent`, and the macOS Window menu role has no Close
 change, ⌘W in Settings would run Close Pane and kill the main window's focused session, and ⌘T, ⌘D and ⌘K
 would act on the hidden main window.
 
-- Menu items built by `item()` check the window their `Click` receives.
-- When that window is the Settings window, Close Pane's item (⌘W on macOS, Ctrl+Shift+W elsewhere)
-  closes Settings. No pane or tab command acts on the main window from it.
-- `App.run`'s "no main window" exception, which today covers only New Tab, also covers Settings, so
-  GoRex ▸ Settings… works after the main window is closed.
+- On macOS a main-menu click's window is `FocusedWindow()`. On Linux and Windows it is the window whose
+  menu bar was used.
+- **One window check, one classification.** Add a field to the `command` table, next to `Hidden`, that
+  marks a command **app-wide**: it runs whatever window is in front, and also when there is no main window.
+  The app-wide commands are Settings…, New Tab (as today, it opens or brings the main window to the front
+  first), Bigger Text, Smaller Text, Actual Size, the three Appearance commands, Quit and End All Sessions.
+  Every other command, including the palette, needs the main window. One helper decides whether a command
+  runs for the window a click came from. `item()` uses it, the Show Tab 1–9 items (built today without
+  `item()`) use it too, so ⌘1–⌘9 in Settings do nothing, and `App.run` uses the same field in place of its
+  New Tab–only exception. App-wide commands run directly, not through `a.do`, which drops work when
+  `a.win == nil`.
+- When the click came from the Settings window, Close Pane's item (⌘W on macOS, Ctrl+Shift+W elsewhere)
+  closes Settings. No command that needs the main window acts on it from Settings.
+- **The menu bar off darwin.** `Application.SetMenu` gives every window, Settings included, the full app
+  menu bar on Linux and Windows. That is intended: its items go through the same window check. On Linux,
+  Ctrl+W in Settings reaches Window ▸ Close Window (`RoleClose` closes the window it was clicked in). On
+  Windows, Settings handles Esc and Ctrl+W itself (§2).
+- **Settings' own queue.** `a.post`, `a.later` and `laterService` feed a queue that only the main view
+  drains (`view.go`). `settingsView` calls `setAppearance` and `setFontSize` directly, and never posts into
+  that queue or assigns `a.services`.
 - **App lifecycle.** `OnActivate` reopens the main window only when `!hasVisibleWindows && a.win == nil`
   (`main.go`). With Settings open and the main window closed, clicking the Dock icon must still bring the
   main window back: the reopen depends on `a.win == nil` alone. Settings-window state lives on `App`
@@ -149,11 +165,23 @@ would act on the hidden main window.
 
 ### 6. Test seams
 
-- **Opening Settings.** `func (a *App) openSettings()` focuses `a.settingsWin` when it is set. Otherwise
-  it creates the window through one package-level func variable: in production `mygo.NewWindow` with
-  `StateKey "settings"`, `Content: ui.View(a.settingsView)`, and `OnClosed` clearing the field. `go test`
-  cannot create a real window (`mygo.NewWindow` off the main thread waits for `App.waitReady`), so tests
-  replace the variable to check that a second open focuses the first window instead of making another.
+- **Every native call the Settings window makes goes through a seam.** Under `go test`, `mygo.NewWindow`,
+  `(*mygo.Window).Focus`, `(*mygo.Window).Close` and `mygo.Theme.SetSource` all wait on a main loop that
+  never runs, so a test calling any of them hangs (§8). Three package-level func variables:
+  - `newSettingsWindow func(a *App) *mygo.Window`. In production it calls
+    `mygo.NewWindow(mygo.WindowOptions{StateKey: "settings", Content: ui.View(a.settingsView), …})` and
+    then registers `win.OnClosed(…)` to clear `a.settingsWin`. `OnClosed` is a method on `*mygo.Window`,
+    not a `WindowOptions` field; `App.open` registers it the same way.
+  - `focusWindow = (*mygo.Window).Focus`
+  - `closeWindow = (*mygo.Window).Close`
+
+  `func (a *App) openSettings()` calls `focusWindow(a.settingsWin)` when it is set, and otherwise
+  `newSettingsWindow(a)`. Tests return `&mygo.Window{}` from the creator (its `Invalidate()` is safe
+  headless, which §3 needs) and replace focus and close with recorders. They check that a second open
+  focuses the first window instead of making another, and that Close Pane from Settings closes it.
+- **Theme.** `applyAppearance` (`settings.go`) calls a package-level func variable whose production value
+  is `mygo.Theme.SetSource`, never `mygo.Theme.SetSource` directly. Tests replace it, so `setAppearance`,
+  `loadSettings` and the write-gate test run headless and can assert which theme was applied.
 - **The page.** `settingsView` is driven headless with `ui.NewTester`, the way `TestPaletteScrolls` drives
   the palette, with `a.win == nil` as in `newTestApp`.
 - **Parsing.** Parse, migrate, clamp and restore-Default form one pure function from bytes to settings.
@@ -173,6 +201,26 @@ Delivery 2 builds on this v2 format. Non-Default profiles store only their overr
 means "inherit". So the Go profile type must be able to represent a missing field (for example a pointer,
 or omitempty with zero meaning unset), and `"default"` is a named constant. Delivery 2 then adds profiles
 without changing the type. In this delivery `termFont` is derived from Default.
+
+### 8. Verified facts about the pinned mygo (`go.mod`)
+
+Checked by the architecture reviewer against the pinned mygo source and a probe test built on it:
+
+- `mygo.go:72-75`: `init` calls `runtime.LockOSThread`, so the main goroutine owns the main thread.
+- `loop.go:87-100`: `onMain` hands work to the main loop and waits. Under `go test` no main loop runs, so
+  it waits forever.
+- `modules.go:259-274`: `Theme.SetSource` calls `onMain`, so it blocks headless.
+- `window.go:513-519` (`Focus`), `:534` (`Close`) and `:607`: they call `onMain`, so they block on a
+  zero `mygo.Window`.
+- `window.go:1338`: `OnClosed` is a method on `*mygo.Window`.
+- `content.go:145-148`: `Invalidate` returns early on a window with no content, so it is safe headless.
+- `menu.go:243-264`: `update` (behind `SetChecked`) changes the item, then `postMain`s the native update
+  without waiting. `NewMenu` and `SetChecked` return headless, and `IsChecked()` reports the new state
+  right after `SetChecked`.
+- `app.go:591`: a macOS main-menu click's window is `FocusedWindow()`. `menu.go:85-88`: on Linux and
+  Windows it is the window whose menu bar was used. `menu.go:507-508`: `RoleClose` closes that window.
+- `app.go:319-323`: off darwin, `Application.SetMenu` gives every window the app menu bar.
+- `internal/darwin/app.go:305`: `OnActivate` fires from `applicationShouldHandleReopen`.
 
 ### 8. Verified source excerpts
 
