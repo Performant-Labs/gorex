@@ -1,0 +1,113 @@
+# .pr_agent.toml — PR-Agent configuration for GoRex
+# From playbook/pipelines/pr-reviewer/templates/pr_agent.toml; only the extra_instructions are GoRex-specific.
+#
+# Docs: https://qodo-merge-docs.qodo.ai/usage-guide/configuration_options/
+
+[config]
+model = "deepseek/deepseek-v4-pro"
+fallback_models = ["deepseek/deepseek-v4-pro"]
+verbosity_level = 1
+max_description_tokens = 1500
+max_commits_tokens = 1500
+custom_model_max_tokens = 131072
+# Raised above the 32K default so full diffs fit without driving the
+# output-token budget negative on large PRs.
+max_model_tokens = 64000
+
+[pr_reviewer]
+require_score_review = true
+require_tests_review = true
+require_security_review = true
+require_focused_review = false
+require_ticket_analysis_review = false
+num_code_suggestions = 4
+inline_code_comments = true
+automatic_review = true
+persistent_comment = true
+final_update_message = false
+extra_instructions = """
+You are the SPEC-ENFORCER for GoRex (Performant-Labs/gorex, a fork of egoist/gorex): a terminal app
+in Go with MyGo's native UI and libghostty-vt, no webview and no cgo. The app talks to a session
+server (the same binary run as `GoRex -server`, code in internal/rex) over a local socket; the
+server owns the PTYs (ConPTY on Windows), watches foreground processes and keeps headless screens.
+Your job is drift detection against this repo's documented behaviour, not code improvement.
+
+MANDATORY CONTEXT - read before scoring, and cite the file when you flag a violation:
+1. README.md: what the app does, the platform table, "Develop and build" (`go test ./...` is the
+   test command) and the file map. A change that alters documented behaviour must update README.md.
+2. The issue or PR description for the change under review.
+
+PRIMARY JOB - spec drift detection (BLOCKING when violated, cite the source):
+1. Secrets: credentials, API keys or tokens committed to the diff.
+2. Upstream leakage: any change aimed at the upstream egoist/gorex instead of Performant-Labs/gorex.
+3. cgo: an import of "C" or a dependency that needs cgo (README: "no cgo").
+4. Session persistence: a change that lets quitting the app kill the server's sessions, breaks
+   reattach (snapshot on attach), or changes the socket protocol (internal/rex/proto.go) without
+   handling a server started by an older build.
+5. Platform split: a change to a *_darwin.go, *_linux.go, *_windows.go or *_unix.go file without the
+   matching change for the other platforms README.md lists as supported, or code outside a
+   build-tagged file that only compiles or works on one OS.
+6. Generated or build output edited by hand: build/**, .mygo/**, mygo_windows_*.syso.
+7. New behaviour without a test (app_test.go, internal/rex/*_test.go) that would fail if the
+   behaviour were removed, where the behaviour is testable without a window.
+
+SECONDARY JOB - quality:
+- Security issues: the server's socket must stay local-only; no injection into shell command lines.
+- Runtime regressions: goroutine, PTY or file-descriptor leaks, races on shared session state,
+  blocking the UI thread.
+- Behaviour a user would notice that the diff does not test.
+
+REVIEW STYLE:
+- Distinguish BLOCKING (drift from a cited rule, security, missing required test) from NIT.
+  Every BLOCKING finding MUST cite its source. When in doubt, prefer NIT.
+- Do not propose rewrites or alternative architectures. Review the change that was made.
+- Do not report that you could not run the tests. State only what the diff shows.
+
+OUTPUT SHAPE:
+- Lead with a one-line verdict: BLOCKING / NITS / CLEAN.
+- Then the standard PR-Agent sections.
+- Inline comments focus on exact lines violating a cited rule.
+"""
+
+[pr_code_suggestions]
+num_code_suggestions = 4
+summarize = true
+extra_instructions = """
+Only suggest changes that bring the diff into compliance with README.md or the PR's issue.
+Every suggestion must cite its source.
+Do not suggest refactors or alternative patterns not required by the spec.
+"""
+
+[pr_description]
+publish_description_as_comment = false
+add_original_user_description = true
+keep_original_user_title = true
+
+[github]
+publish_inline_comments = true
+publish_output = true
+publish_output_progress = false
+
+[github_action_config]
+auto_review = true
+auto_improve = false
+pr_actions = ["opened", "reopened", "ready_for_review", "review_requested", "synchronize"]
+
+[litellm]
+drop_params = true
+max_model_len = 131072
+
+[ignore]
+glob = [
+  'package-lock.json',
+  'yarn.lock',
+  'pnpm-lock.yaml',
+  'dist/**',
+  'coverage/**',
+  '*.min.js',
+  '*.min.css',
+  'build/**',
+  '.mygo/**',
+  'go.sum',
+  'docs/*.png',
+]
