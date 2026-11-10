@@ -51,3 +51,10 @@ mygo paths are in the module directory of `github.com/egoist/mygo@v0.3.5-0.20261
   **Source:** `debug.go:70`
   **Verbatim excerpt:**
   > 				a.run(cmd)
+
+## T (Phase 7)
+
+- **Fact:** A slider with `Step(step)` takes only lo and the multiples of step from it. So `TestSettingsTextSize` asserts that a click halfway along Default's slider (8–32, step 1) lands on a whole point near 20, although the slider's displayed thumb value (11.6) is not a whole number.
+  **Source:** mygo `ui/base.go:122-124`
+  **Verbatim excerpt:**
+  > Step makes the values of a slider lo and the multiples of step from it, which the arrows move between, as a StepSlider's. Of a range of your own (Range), it tells assistive technology how far the keys move the value.
