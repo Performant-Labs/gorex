@@ -43,8 +43,10 @@ func main() {
 	a := &App{}
 	mygo.App.SetMenu(a.menu())
 	mygo.App.WhenReady(a.open)
+	// A click on the Dock icon opens the main window again when it is
+	// closed, even with Settings open.
 	mygo.App.OnActivate(func(hasVisibleWindows bool) {
-		if !hasVisibleWindows && a.win == nil {
+		if a.win == nil {
 			a.open()
 		}
 	})

@@ -23,10 +23,14 @@ type command struct {
 	Run   func(a *App)
 	// Hidden keeps it out of the palette.
 	Hidden bool
+	// AppWide runs it from whichever window is in front, as Settings;
+	// with no main window, its Run decides what it does. The others act
+	// on the main window, and only from it.
+	AppWide bool
 }
 
 var (
-	cmdNewTab      = command{Title: "New Tab", Accel: "CmdOrCtrl+T", Keys: "⌘T", Other: ctrlShift(ui.KeyT), Run: func(a *App) { a.newTab(a.currentDir()) }}
+	cmdNewTab      = command{Title: "New Tab", Accel: "CmdOrCtrl+T", Keys: "⌘T", Other: ctrlShift(ui.KeyT), Run: func(a *App) { a.newTab(a.currentDir()) }, AppWide: true}
 	cmdSplitRight  = command{Title: "Split Right", Accel: "CmdOrCtrl+D", Keys: "⌘D", Other: ctrlShift(ui.KeyD), Run: func(a *App) { a.split(false) }}
 	cmdSplitDown   = command{Title: "Split Down", Accel: "CmdOrCtrl+Shift+D", Keys: "⇧⌘D", Other: ctrlShift(ui.KeyE), Run: func(a *App) { a.split(true) }}
 	cmdClosePane   = command{Title: "Close Pane", Accel: "CmdOrCtrl+W", Keys: "⌘W", Other: ctrlShift(ui.KeyW), Run: func(a *App) { a.closeFocused() }}
@@ -49,13 +53,14 @@ var (
 	cmdClear       = command{Title: "Clear Screen and Scrollback", Accel: "CmdOrCtrl+K", Keys: "⌘K", Other: ctrlShift(ui.KeyK), Run: func(a *App) { a.clearFocused() }, Hidden: true}
 	cmdClearScroll = command{Title: "Clear Scrollback", Run: func(a *App) { a.clearFocused() }}
 	cmdRestart     = command{Title: "Restart Shell in Pane", Run: func(a *App) { a.restartFocused() }}
-	cmdBigger      = command{Title: "Bigger Text", Accel: "CmdOrCtrl+=", Keys: "⌘+", Other: shortcut{ui.Ctrl, ui.KeyEqual}, Run: func(a *App) { a.setFontSize(termFont.Size + 1) }}
-	cmdSmaller     = command{Title: "Smaller Text", Accel: "CmdOrCtrl+-", Keys: "⌘−", Other: shortcut{ui.Ctrl, ui.KeyMinus}, Run: func(a *App) { a.setFontSize(termFont.Size - 1) }}
-	cmdActualSize  = command{Title: "Actual Size", Accel: "CmdOrCtrl+0", Keys: "⌘0", Other: shortcut{ui.Ctrl, ui.Key0}, Run: func(a *App) { a.setFontSize(defaultFontSize) }}
-	cmdLight       = command{Title: "Appearance: Light", Run: func(a *App) { a.setAppearance("light") }}
-	cmdDark        = command{Title: "Appearance: Dark", Run: func(a *App) { a.setAppearance("dark") }}
-	cmdSystem      = command{Title: "Appearance: System", Run: func(a *App) { a.setAppearance("") }}
-	cmdEndAll      = command{Title: "Quit and End All Sessions", Accel: "CmdOrCtrl+Alt+Q", Keys: "⌥⌘Q", Run: func(a *App) { a.quitAndEnd() }}
+	cmdBigger      = command{Title: "Bigger Text", Accel: "CmdOrCtrl+=", Keys: "⌘+", Other: shortcut{ui.Ctrl, ui.KeyEqual}, Run: func(a *App) { a.setFontSize(termFont.Size + 1) }, AppWide: true}
+	cmdSmaller     = command{Title: "Smaller Text", Accel: "CmdOrCtrl+-", Keys: "⌘−", Other: shortcut{ui.Ctrl, ui.KeyMinus}, Run: func(a *App) { a.setFontSize(termFont.Size - 1) }, AppWide: true}
+	cmdActualSize  = command{Title: "Actual Size", Accel: "CmdOrCtrl+0", Keys: "⌘0", Other: shortcut{ui.Ctrl, ui.Key0}, Run: func(a *App) { a.setFontSize(defaultFontSize) }, AppWide: true}
+	cmdLight       = command{Title: "Appearance: Light", Run: func(a *App) { a.setAppearance("light") }, AppWide: true}
+	cmdDark        = command{Title: "Appearance: Dark", Run: func(a *App) { a.setAppearance("dark") }, AppWide: true}
+	cmdSystem      = command{Title: "Appearance: System", Run: func(a *App) { a.setAppearance("system") }, AppWide: true}
+	cmdEndAll      = command{Title: "Quit and End All Sessions", Accel: "CmdOrCtrl+Alt+Q", Keys: "⌥⌘Q", Run: func(a *App) { a.quitAndEnd() }, AppWide: true}
+	cmdSettings    = command{Title: "Settings…", Accel: "CmdOrCtrl+,", Keys: "⌘,", Other: shortcut{ui.Ctrl, ui.KeyComma}, Run: func(a *App) { a.openSettings() }, AppWide: true}
 )
 
 // paletteCommands are those the command palette lists, before the tabs.
@@ -64,7 +69,7 @@ var paletteCommands = []*command{
 	&cmdNextTab, &cmdPrevTab, &cmdRenameTab,
 	&cmdFocusLeft, &cmdFocusRight, &cmdFocusUp, &cmdFocusDown,
 	&cmdGrowLeft, &cmdGrowRight, &cmdGrowUp, &cmdGrowDown,
-	&cmdBigger, &cmdSmaller, &cmdActualSize, &cmdLight, &cmdDark, &cmdSystem,
+	&cmdBigger, &cmdSmaller, &cmdActualSize, &cmdLight, &cmdDark, &cmdSystem, &cmdSettings,
 	&cmdClearScroll, &cmdRestart, &cmdEndAll,
 }
 
@@ -117,40 +122,60 @@ func (s shortcut) String() string {
 		key = map[ui.Key]string{
 			ui.KeyEnter: "Enter", ui.KeyPageUp: "PageUp", ui.KeyPageDown: "PageDown",
 			ui.KeyLeft: "Left", ui.KeyRight: "Right", ui.KeyUp: "Up", ui.KeyDown: "Down",
-			ui.KeyEqual: "=", ui.KeyMinus: "-",
+			ui.KeyEqual: "=", ui.KeyMinus: "-", ui.KeyComma: ",",
 		}[k]
 	}
 	return strings.Join(append(parts, key), "+")
 }
 
-// menu builds the menu bar, whose items run commands in the window.
+// menu builds the menu bar, whose items run commands in the window they
+// are chosen in.
 func (a *App) menu() *mygo.Menu {
 	item := func(cmd *command) *mygo.MenuItem {
-		return &mygo.MenuItem{Label: cmd.Title, Accelerator: cmd.Accel, Click: func(*mygo.MenuItem, *mygo.Window) {
-			a.run(cmd)
+		return &mygo.MenuItem{Label: cmd.Title, Accelerator: cmd.Accel, Click: func(_ *mygo.MenuItem, win *mygo.Window) {
+			a.click(cmd, win)
 		}}
 	}
 	tabItems := []*mygo.MenuItem{item(&cmdNextTab), item(&cmdPrevTab), mygo.Separator()}
 	for i := 1; i <= 9; i++ {
-		i := i
 		accel := fmt.Sprintf("CmdOrCtrl+%d", i)
 		if runtime.GOOS != "darwin" {
 			accel = showTabKey(i).String()
 		}
-		tabItems = append(tabItems, &mygo.MenuItem{
-			Label: fmt.Sprintf("Show Tab %d", i), Accelerator: accel,
-			Click: func(*mygo.MenuItem, *mygo.Window) {
-				a.do(func() { a.showTab(i) })
-			},
-		})
+		tabItems = append(tabItems, item(&command{Title: fmt.Sprintf("Show Tab %d", i), Accel: accel, Run: func(a *App) { a.showTab(i) }}))
 	}
+	// The appearances' items are kept, to show a change made elsewhere.
+	a.appearanceItems = map[string]*mygo.MenuItem{}
 	appearance := func(label, v string) *mygo.MenuItem {
-		return &mygo.MenuItem{Label: label, Type: mygo.MenuItemRadio, Checked: prefs.Appearance == v, Click: func(*mygo.MenuItem, *mygo.Window) {
+		it := &mygo.MenuItem{Label: label, Type: mygo.MenuItemRadio, Checked: prefs.Appearance == v, Click: func(*mygo.MenuItem, *mygo.Window) {
 			a.setAppearance(v)
 		}}
+		a.appearanceItems[v] = it
+		return it
+	}
+	// Settings… is the app menu's on macOS, written out in full as mygo
+	// fills it only when it has no items, and Edit's elsewhere.
+	appMenu := &mygo.MenuItem{Role: mygo.RoleAppMenu}
+	var editSettings []*mygo.MenuItem
+	if runtime.GOOS == "darwin" {
+		appMenu.Submenu = []*mygo.MenuItem{
+			{Role: mygo.RoleAbout},
+			mygo.Separator(),
+			item(&cmdSettings),
+			mygo.Separator(),
+			{Role: mygo.RoleServices},
+			mygo.Separator(),
+			{Role: mygo.RoleHide},
+			{Role: mygo.RoleHideOthers},
+			{Role: mygo.RoleUnhide},
+			mygo.Separator(),
+			{Role: mygo.RoleQuit},
+		}
+	} else {
+		editSettings = []*mygo.MenuItem{mygo.Separator(), item(&cmdSettings)}
 	}
 	return mygo.NewMenu([]*mygo.MenuItem{
-		{Role: mygo.RoleAppMenu},
+		appMenu,
 		{Label: "Shell", Submenu: []*mygo.MenuItem{
 			item(&cmdNewTab),
 			mygo.Separator(),
@@ -163,7 +188,7 @@ func (a *App) menu() *mygo.Menu {
 			item(&cmdRestart),
 			item(&cmdEndAll),
 		}},
-		{Label: "Edit", Submenu: []*mygo.MenuItem{
+		{Label: "Edit", Submenu: append([]*mygo.MenuItem{
 			{Role: mygo.RoleUndo},
 			{Role: mygo.RoleRedo},
 			mygo.Separator(),
@@ -173,7 +198,7 @@ func (a *App) menu() *mygo.Menu {
 			{Role: mygo.RoleSelectAll},
 			mygo.Separator(),
 			item(&cmdClear),
-		}},
+		}, editSettings...)},
 		{Label: "View", Submenu: []*mygo.MenuItem{
 			item(&cmdPalette),
 			item(&cmdPalette2),
@@ -188,7 +213,7 @@ func (a *App) menu() *mygo.Menu {
 			item(&cmdSmaller),
 			item(&cmdActualSize),
 			{Label: "Appearance", Submenu: []*mygo.MenuItem{
-				appearance("System", ""),
+				appearance("System", "system"),
 				appearance("Light", "light"),
 				appearance("Dark", "dark"),
 			}},
@@ -209,14 +234,40 @@ func (a *App) do(fn func()) {
 	a.win.Update(fn)
 }
 
-// run runs a command of the menus, on the main thread. New Tab opens the
-// window again when it was closed.
+// click runs a command of the menus chosen in win, which is nil when no
+// window has the focus. From the Settings window, Close Pane closes it.
+func (a *App) click(cmd *command, win *mygo.Window) {
+	if cmd == &cmdClosePane && win != nil && win == a.settingsWin {
+		closeWindow(win)
+		return
+	}
+	if a.runsIn(cmd, win) {
+		a.run(cmd)
+	}
+}
+
+// runsIn reports whether cmd runs when chosen in win: an app-wide command
+// from any window, or none, and the others from the main window only.
+func (a *App) runsIn(cmd *command, win *mygo.Window) bool {
+	return cmd.AppWide || win != nil && win == a.win
+}
+
+// run runs a command, on the main thread, through a.do so that the main
+// window draws after it. With no main window, an app-wide command runs
+// directly, as a.do would drop it, and New Tab opens the window again;
+// with one, New Tab first brings it to the front, as from Settings.
 func (a *App) run(cmd *command) {
 	if a.win == nil {
-		if cmd == &cmdNewTab {
+		switch {
+		case cmd == &cmdNewTab:
 			mygo.RunOnMain(a.open)
+		case cmd.AppWide:
+			cmd.Run(a)
 		}
 		return
+	}
+	if cmd == &cmdNewTab {
+		focusWindow(a.win)
 	}
 	a.do(func() {
 		if a.win != nil {
@@ -299,7 +350,13 @@ func (a *App) restartFocused() {
 	a.changed()
 }
 
+// quitAndEnd ends the sessions and quits. It needs the server's
+// connection, which only the main window keeps: without it, it does
+// nothing, rather than quit and leave the sessions running.
 func (a *App) quitAndEnd() {
+	if a.win == nil {
+		return
+	}
 	a.quitting = true
 	for _, t := range a.tabs {
 		for _, p := range t.panes() {

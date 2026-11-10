@@ -34,7 +34,7 @@ terminal plugin (Ghostty's libghostty-vt). No webview, no cgo: one ~15 MB app.
 - **Command palette** (⇧⌘P, Ctrl+Shift+P, or the ⌘ button): every command, and every pane
   to jump to, fuzzy-matched.
 - Light and dark appearances (View ▸ Appearance), text size (⌘+ ⌘− ⌘0),
-  JetBrains Mono embedded.
+  JetBrains Mono embedded, and a Settings window (⌘,) for both.
 
 ## Shortcuts
 
@@ -52,12 +52,16 @@ terminal plugin (Ghostty's libghostty-vt). No webview, no cgo: one ~15 MB app.
 | ⇧⌘P, ⌘P | Ctrl+Shift+P | Command palette |
 | ⌘K | Ctrl+Shift+K | Clear |
 | ⌘+ ⌘− ⌘0 | Ctrl+= Ctrl+- Ctrl+0 | Text size |
+| ⌘, | Ctrl+, | Settings |
 | ⌥⌘Q | | Quit and end all sessions |
 
 Elsewhere than on macOS, Control and a letter are the terminal's (Ctrl+C,
 Ctrl+D, Ctrl+W…), so GoRex's shortcuts take Shift too, as copying and
 pasting do (Ctrl+Shift+C, Ctrl+Shift+V), and none take Control and Alt,
-which type characters (AltGr) on many keyboards.
+which type characters (AltGr) on many keyboards. Ctrl+= Ctrl+- Ctrl+0 for
+the text size and Ctrl+, for Settings go without Shift, as in other apps:
+in the terminal's legacy encoding Ctrl+, sends nothing, so the terminal
+loses nothing to it.
 
 ## Develop and build
 
@@ -103,7 +107,8 @@ resizes from its sides and bottom, not its top.
 | `state.go` | tabs, the tree of splits, panes, saving and restoring the layout |
 | `view.go`, `tabs.go`, `host.go`, `commands.go` | the interface: title bar, tabs, panes, host popover, menus and palette |
 | `programs.go` | how programs show: names, glyphs, tile colors |
-| `style.go`, `settings.go` | colors, fonts, terminal themes; appearance and text size |
+| `style.go`, `settings.go` | colors, fonts, terminal themes; appearance and text size, and `settings.json` and its migration from version 1 |
+| `preferences.go` | the Settings window: General, and the Default profile's text size |
 | `internal/rex` | the session server and its client: PTYs, foreground processes, headless screens, the socket protocol |
 
 Not replicated: Rex's connections to servers on other machines; GoRex's
