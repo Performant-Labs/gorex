@@ -46,6 +46,14 @@ The new format, with only the built-in Default profile in this story:
   in memory, and the file is loaded read-only for the rest of the run, as in §6 "Write gate". So the user's
   v1 file is never replaced unless its byte-for-byte copy exists. The next launch tries the migration
   again.
+- **When the v2 file is written.** A successful migration completes at load: the backup is written, then
+  `settings.json` is rewritten as v2 in the same `loadSettings` call, not at the next change. Tests pin
+  that after loading a v1 file, `settings.json` on disk is v2 and `settings.v1.json` holds the original
+  bytes. A crash between the two writes leaves the v1 file in place, so the next launch simply migrates
+  again.
+- **A retry overwrites an existing backup.** If `settings.v1.json` already exists when a v1 file is
+  migrated (an earlier attempt wrote the backup, then failed to write v2), it is overwritten. The v1 file
+  was left unchanged by that attempt, so the new copy holds the same bytes.
 - **Clamping.** Text size is 8–32 pt everywhere. Today loading accepts 6–40 while `setFontSize` clamps to
   8–32, so a v1 value outside 8–32 is clamped on load. Today's code (`settings.go`):
 
@@ -104,10 +112,15 @@ Wireframes, committed in this branch:
   current one is selected. Choosing one changes the whole app at once.
 - **Default page.** Title "Default". **Text size** is a slider over 8–32 pt in 1 pt steps, with − and +
   buttons and the value shown (for example "11.6 pt"; a value that is not a whole number stays as it is
-  until it is changed). Under it is a **live preview**, a few lines of terminal text drawn in the app's
+  until it is changed). The thumb sits at the exact value, between steps for a value such as 11.6.
+  Dragging it, or pressing − or +, moves to whole points: − from 11.6 gives 11, + gives 12. Under it is a **live preview**, a few lines of terminal text drawn in the app's
   current appearance at the chosen size.
 - **No OK or Apply.** Changes apply immediately to every pane and save automatically. The footer says
   "Changes apply and save as you make them."
+- **When settings cannot be saved,** the run is read-only (§1 "A failed backup", §6 "Write gate"), and the
+  footer says so instead: "Changes apply but are not saved: settings.json is newer than this version of
+  GoRex", "… settings.json could not be read" or "… the settings backup could not be written". Changes
+  still apply to the app. The user is never left believing a change was saved when it was not.
 
 ### 3. Keeping everything in step
 
@@ -240,6 +253,11 @@ would act on the hidden main window.
   for the whole run of the app, not only the load: a later `setAppearance` or `setFontSize` (from Settings,
   the menu, the palette or ⌘+ / ⌘− / ⌘0) still changes the app but does not write `settings.json`. The
   tests for criterion 8 load such a file, then change a setting, and check the file on disk is unchanged.
+  The read-only state carries its reason, which the Settings footer shows (§2).
+- **No test hangs.** The probe that shows `SetChecked` and `Invalidate` return headless ran on darwin
+  (§8). Linux and Windows share the same `update` / `postMain` path, but a test that calls them runs the
+  call in a goroutine and fails after 5 seconds rather than hanging, so a backend that diverges shows up
+  as a failure.
 
 ### 7. Forward-compat
 
@@ -267,6 +285,9 @@ Checked by the architecture reviewer against the pinned mygo source and a probe 
   Windows it is the window whose menu bar was used. `menu.go:507-508`: `RoleClose` closes that window.
 - `app.go:319-323`: off darwin, `Application.SetMenu` gives every window the app menu bar.
 - `internal/darwin/app.go:305`: `OnActivate` fires from `applicationShouldHandleReopen`.
+- `main.go:125-130` (this repository): the main window's `OnClosed` handler ends with `a.client.Close()`
+  and `a.win = nil`, so `a.win == nil` is exactly "the main window is closed", which the `OnActivate`
+  change in §4 relies on.
 
 ### 8. Verified source excerpts
 
@@ -437,7 +458,8 @@ profile-related palette entries; overrides, Reset and inheritance UI.
 8. Settings survive a restart. A missing, invalid or newer-version file never crashes the app or loses the
    user's file, including after a setting is changed later in the same run (§6 "Write gate").
    If the `settings.v1.json` backup cannot be written, the v1 file is left as it was (§1 "A failed backup
-   stops the migration").
+   stops the migration"). While a run is read-only, the Settings footer says changes are not saved and
+   why (§2). After a successful migration, `settings.json` on disk is already v2 when loading returns.
 9. On Windows, Esc, Ctrl+W and Ctrl+Shift+W close the Settings window, and Ctrl+, with Settings focused
    keeps that one window in front without opening a second (§2 "Windows").
 10. With Settings frontmost, its close shortcuts close Settings and close no pane: ⌘W on macOS; on
