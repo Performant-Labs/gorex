@@ -691,6 +691,32 @@ func TestSettingsReadOnly(t *testing.T) {
 	}
 }
 
+// TestSettingsWriteFails: when settings.json cannot be written during a
+// run, the change still applies, and Settings says it was not saved rather
+// than that it was.
+func TestSettingsWriteFails(t *testing.T) {
+	a, _, _, dir := settingsApp(t, "")
+	if readOnly != "" {
+		t.Fatalf("a first launch is read-only: %q", readOnly)
+	}
+	// A directory, not empty, where settings.json goes.
+	if err := os.MkdirAll(filepath.Join(dir, "settings.json", "x"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	within(t, "setFontSize", func() { a.setFontSize(17) })
+	wantSize(t, "a change that cannot be written", 17)
+	if readOnly != readOnlyWrite {
+		t.Errorf("readOnly = %q after a failed write, want %q", readOnly, readOnlyWrite)
+	}
+	tt := settingsTester(a)
+	if !tt.HasText("Changes apply but are not saved") || !tt.HasText(readOnlyWrite) {
+		t.Errorf("Settings does not say the change was not saved; texts %q", tt.Texts())
+	}
+	if tt.HasText("Changes apply and save as you make them.") {
+		t.Error("Settings says changes are saved after a failed write")
+	}
+}
+
 // TestSettingsKeysOnWindows: on Windows, where native-UI windows run no
 // menu shortcuts, Settings closes on Esc, Ctrl+W and Ctrl+Shift+W, keeps
 // one window on Ctrl+, and runs Ctrl+= (criteria 9 and 10).
