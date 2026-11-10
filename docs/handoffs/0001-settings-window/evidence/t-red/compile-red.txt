@@ -1,0 +1,33 @@
+# gorex [gorex.test]
+./settings_test.go:91:42: undefined: newSettingsWindow
+./settings_test.go:91:61: undefined: focusWindow
+./settings_test.go:91:74: undefined: closeWindow
+./settings_test.go:91:87: undefined: setThemeSource
+./settings_test.go:94:3: undefined: newSettingsWindow
+./settings_test.go:94:22: undefined: focusWindow
+./settings_test.go:94:35: undefined: closeWindow
+./settings_test.go:94:48: undefined: setThemeSource
+./settings_test.go:97:2: undefined: newSettingsWindow
+./settings_test.go:100:5: a.settingsWin undefined (type *App has no field or method settingsWin)
+./settings_test.go:103:2: undefined: focusWindow
+./settings_test.go:104:2: undefined: closeWindow
+./settings_test.go:105:2: undefined: setThemeSource
+./settings_test.go:236:23: a.settingsView undefined (type *App has no field or method settingsView)
+./settings_test.go:317:5: undefined: cmdSettings
+./settings_test.go:318:70: undefined: cmdSettings
+./settings_test.go:320:33: undefined: cmdSettings
+./settings_test.go:355:30: a.openSettings undefined (type *App has no field or method openSettings)
+./settings_test.go:370:30: a.openSettings undefined (type *App has no field or method openSettings)
+./settings_test.go:371:22: a.settingsWin undefined (type *App has no field or method settingsWin)
+./settings_test.go:373:25: undefined: cmdSettings
+./settings_test.go:377:9: a.runsIn undefined (type *App has no field or method runsIn)
+./settings_test.go:380:15: a.runsIn undefined (type *App has no field or method runsIn)
+./settings_test.go:383:15: a.runsIn undefined (type *App has no field or method runsIn)
+./settings_test.go:392:15: a.runsIn undefined (type *App has no field or method runsIn)
+./settings_test.go:395:15: a.runsIn undefined (type *App has no field or method runsIn)
+./settings_test.go:407:30: a.openSettings undefined (type *App has no field or method openSettings)
+./settings_test.go:408:16: a.settingsWin undefined (type *App has no field or method settingsWin)
+./settings_test.go:702:30: a.openSettings undefined (type *App has no field or method openSettings)
+./settings_test.go:703:16: a.settingsWin undefined (type *App has no field or method settingsWin)
+FAIL	gorex [build failed]
+FAIL

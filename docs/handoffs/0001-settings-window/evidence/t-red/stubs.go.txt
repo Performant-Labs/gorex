@@ -1,0 +1,24 @@
+// T-red scratch stub (NOT production code, never committed as .go).
+// Used in a scratchpad copy of the tree, together with two one-line edits there:
+//   state.go:    win    *mygo.Window  ->  win, settingsWin *mygo.Window
+//   settings.go: mygo.Theme.SetSource( -> setThemeSource(   (the seam only)
+
+package main
+
+// Scratch-only stubs for the T-red check: they declare the contract's names
+// with today's behaviour, so the tests compile and fail on their assertions.
+
+import (
+	"github.com/egoist/mygo"
+	"github.com/egoist/mygo/ui"
+)
+
+var newSettingsWindow = func(a *App) *mygo.Window { return nil }
+var focusWindow = (*mygo.Window).Focus
+var closeWindow = (*mygo.Window).Close
+var setThemeSource = mygo.Theme.SetSource
+var cmdSettings = command{}
+
+func (a *App) openSettings()                              {}
+func (a *App) settingsView(c *ui.Context)                 {}
+func (a *App) runsIn(cmd *command, win *mygo.Window) bool { return a.win != nil || cmd == &cmdNewTab }

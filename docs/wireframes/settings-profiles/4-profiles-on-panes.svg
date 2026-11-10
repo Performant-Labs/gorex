@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="640" viewBox="0 0 1240 640">
+<rect x="0" y="0" width="1240" height="640" rx="0" fill="#fafafa"/>
+<text x="32" y="40" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" fill="#1d1d1f" font-weight="700" text-anchor="start">4 · Profiles on panes — what a pane uses, and changing it</text>
+<text x="32" y="64" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#636366" font-weight="400" text-anchor="start">Every pane has a profile, kept with the layout. New tabs use Default; splits use the focused pane's profile.</text>
+<rect x="32" y="92" width="700" height="300" rx="12" fill="#efe1e6"/>
+<rect x="44" y="104" width="332" height="276" rx="10" fill="#ffffff" stroke="#c7c7cc" stroke-width="1"/>
+<rect x="56" y="114" width="18" height="18" rx="4" fill="#e4e4e8"/>
+<text x="82" y="128" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d1d1f" font-weight="600" text-anchor="start">zsh</text>
+<text x="112.8" y="128" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">~/Projects/gorex</text>
+<line x1="44" y1="142" x2="376" y2="142" stroke="#c7c7cc" stroke-width="1"/>
+<text x="58" y="168" font-family="Menlo, monospace" font-size="11" fill="#1d1d1f" font-weight="400" text-anchor="start">$ git status</text>
+<text x="58" y="185.6" font-family="Menlo, monospace" font-size="11" fill="#636366" font-weight="400" text-anchor="start">nothing to commit</text>
+<rect x="388" y="104" width="332" height="276" rx="10" fill="#ffffff" stroke="#2f6fde" stroke-width="2"/>
+<rect x="400" y="114" width="18" height="18" rx="4" fill="#e4e4e8"/>
+<text x="426" y="128" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d1d1f" font-weight="600" text-anchor="start">Node</text>
+<text x="464.4" y="128" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">~/Projects/site</text>
+<rect x="608" y="114" width="77.8" height="19" rx="9.5" fill="#e3ecfb"/>
+<text x="615" y="128" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11" fill="#2f6fde" font-weight="600" text-anchor="start">Presenting</text>
+<line x1="388" y1="142" x2="720" y2="142" stroke="#c7c7cc" stroke-width="1"/>
+<text x="402" y="168" font-family="Menlo, monospace" font-size="15" fill="#1d1d1f" font-weight="400" text-anchor="start">$ npm run dev</text>
+<text x="402" y="192.0" font-family="Menlo, monospace" font-size="15" fill="#636366" font-weight="400" text-anchor="start">ready on :3000</text>
+<rect x="470" y="144" width="210" height="150" rx="8" fill="#ffffff" stroke="#c7c7cc" stroke-width="1"/>
+<text x="488" y="167" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">Split Right</text>
+<text x="666" y="167" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#8e8e93" font-weight="400" text-anchor="end">⌘D</text>
+<text x="488" y="193" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">Split Down</text>
+<text x="666" y="193" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#8e8e93" font-weight="400" text-anchor="end">⇧⌘D</text>
+<text x="488" y="219" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">Zoom</text>
+<text x="666" y="219" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#8e8e93" font-weight="400" text-anchor="end">⇧⌘↩</text>
+<line x1="478" y1="232" x2="672" y2="232" stroke="#c7c7cc" stroke-width="1"/>
+<rect x="476" y="238" width="198" height="24" rx="4" fill="#2f6fde"/>
+<text x="488" y="255" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#fff" font-weight="400" text-anchor="start">Profile</text>
+<text x="666" y="255" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#fff" font-weight="400" text-anchor="end">▸</text>
+<text x="488" y="281" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">Edit “Presenting”…</text>
+<rect x="684" y="236" width="170" height="124" rx="8" fill="#ffffff" stroke="#c7c7cc" stroke-width="1"/>
+<text x="702" y="259" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">  Default</text>
+<text x="702" y="285" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">✓ Presenting</text>
+<text x="702" y="311" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">  Late night</text>
+<line x1="692" y1="324" x2="846" y2="324" stroke="#c7c7cc" stroke-width="1"/>
+<text x="702" y="347" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">  New Profile…</text>
+<rect x="32" y="420" width="300" height="26" rx="4" fill="#f2f2f4" stroke="#c7c7cc" stroke-width="1"/>
+<text x="48" y="438" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">GoRex</text>
+<text x="104" y="438" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="600" text-anchor="start">Shell</text>
+<text x="160" y="438" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">Edit</text>
+<text x="216" y="438" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">View</text>
+<text x="272" y="438" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">Tabs</text>
+<rect x="32" y="448" width="250" height="124" rx="8" fill="#ffffff" stroke="#c7c7cc" stroke-width="1"/>
+<text x="50" y="471" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">New Tab</text>
+<text x="268" y="471" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#8e8e93" font-weight="400" text-anchor="end">⌘T</text>
+<rect x="38" y="480" width="238" height="24" rx="4" fill="#2f6fde"/>
+<text x="50" y="497" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#fff" font-weight="400" text-anchor="start">New Tab with Profile</text>
+<text x="268" y="497" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#fff" font-weight="400" text-anchor="end">▸</text>
+<line x1="40" y1="510" x2="274" y2="510" stroke="#c7c7cc" stroke-width="1"/>
+<text x="50" y="533" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">Split Right</text>
+<text x="268" y="533" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#8e8e93" font-weight="400" text-anchor="end">⌘D</text>
+<text x="50" y="559" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">Split Down</text>
+<text x="268" y="559" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#8e8e93" font-weight="400" text-anchor="end">⇧⌘D</text>
+<rect x="286" y="474" width="160" height="88" rx="8" fill="#ffffff" stroke="#c7c7cc" stroke-width="1"/>
+<text x="304" y="497" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">Default</text>
+<text x="304" y="523" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">Presenting</text>
+<text x="304" y="549" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">Late night</text>
+<line x1="600" y1="112" x2="560" y2="124" stroke="#c2410c" stroke-width="1.2" stroke-dasharray="3 3"/>
+<circle cx="560" cy="124" r="3" fill="#c2410c"/>
+<circle cx="600" cy="112" r="11" fill="#c2410c"/>
+<text x="600" y="116.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">1</text>
+<line x1="870" y1="270" x2="856" y2="270" stroke="#c2410c" stroke-width="1.2" stroke-dasharray="3 3"/>
+<circle cx="856" cy="270" r="3" fill="#c2410c"/>
+<circle cx="870" cy="270" r="11" fill="#c2410c"/>
+<text x="870" y="274.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">2</text>
+<line x1="460" y1="540" x2="446" y2="520" stroke="#c2410c" stroke-width="1.2" stroke-dasharray="3 3"/>
+<circle cx="446" cy="520" r="3" fill="#c2410c"/>
+<circle cx="460" cy="540" r="11" fill="#c2410c"/>
+<text x="460" y="544.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">3</text>
+<line x1="700" y1="410" x2="690" y2="372" stroke="#c2410c" stroke-width="1.2" stroke-dasharray="3 3"/>
+<circle cx="690" cy="372" r="3" fill="#c2410c"/>
+<circle cx="700" cy="410" r="11" fill="#c2410c"/>
+<text x="700" y="414.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">4</text>
+<text x="930" y="120" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" fill="#1d1d1f" font-weight="700" text-anchor="start">Notes</text>
+<circle cx="941" cy="142" r="11" fill="#c2410c"/>
+<text x="941" y="146.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">1</text>
+<text x="960" y="146" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d1d1f" font-weight="600" text-anchor="start">Profile chip in the pane header</text>
+<text x="960" y="163" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">Shown only when it isn't Default, so a</text>
+<text x="960" y="180" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">one-profile setup looks as it does today.</text>
+<circle cx="941" cy="207" r="11" fill="#c2410c"/>
+<text x="941" y="211.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">2</text>
+<text x="960" y="211" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d1d1f" font-weight="600" text-anchor="start">Pane ▸ Profile</text>
+<text x="960" y="228" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">Header context menu, and View ▸ Profile</text>
+<text x="960" y="245" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">for the focused pane. Applies at once.</text>
+<text x="960" y="262" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">Kept in layout.json; survives restarts.</text>
+<circle cx="941" cy="289" r="11" fill="#c2410c"/>
+<text x="941" y="293.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">3</text>
+<text x="960" y="293" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d1d1f" font-weight="600" text-anchor="start">New Tab with Profile</text>
+<text x="960" y="310" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">⌘T stays on Default. Splits inherit</text>
+<text x="960" y="327" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">the focused pane's profile.</text>
+<circle cx="941" cy="354" r="11" fill="#c2410c"/>
+<text x="941" y="358.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">4</text>
+<text x="960" y="358" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d1d1f" font-weight="600" text-anchor="start">⌘+ ⌘− ⌘0 edit the focused pane's</text>
+<text x="960" y="375" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">profile — every pane using it changes,</text>
+<text x="960" y="392" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">as all panes do today. ⌘0 clears the</text>
+<text x="960" y="409" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">override (on Default: back to 11.6).</text>
+</svg>

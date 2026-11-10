@@ -108,6 +108,15 @@ type App struct {
 	posted []func()
 	// services keeps redraw requests available to menu callbacks.
 	services ui.Services
+
+	// The Settings window, which outlives the main window: reset leaves
+	// it. settingsPage is the page it shows, "" for General, and preview
+	// the terminal of its text size's preview, one for the app's life.
+	settingsWin  *mygo.Window
+	settingsPage string
+	preview      *terminal.Terminal
+	// appearanceItems are View ▸ Appearance's choices, by appearance.
+	appearanceItems map[string]*mygo.MenuItem
 }
 
 func (a *App) post(fn func()) {

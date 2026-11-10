@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="640" viewBox="0 0 1240 640">
+<rect x="0" y="0" width="1240" height="640" rx="0" fill="#fafafa"/>
+<text x="32" y="40" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" fill="#1d1d1f" font-weight="700" text-anchor="start">3 · New Profile sheet</text>
+<text x="32" y="64" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#636366" font-weight="400" text-anchor="start">From “+ New Profile…”, ⋯ ▸ Duplicate… (copy pre-selected), or the palette's “New Profile…”.</text>
+<rect x="34" y="96" width="760" height="520" rx="12" fill="#00000014"/>
+<rect x="32" y="92" width="760" height="520" rx="12" fill="#ffffff" stroke="#c7c7cc" stroke-width="1"/>
+<circle cx="52" cy="110" r="6" fill="#ff5f57"/>
+<circle cx="72" cy="110" r="6" fill="#febc2e"/>
+<circle cx="92" cy="110" r="6" fill="#28c840"/>
+<text x="412.0" y="115" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="600" text-anchor="middle">Settings</text>
+<line x1="32" y1="130" x2="792" y2="130" stroke="#c7c7cc" stroke-width="1"/>
+<rect x="33" y="131" width="200" height="480" rx="0" fill="#f2f2f4"/>
+<line x1="233" y1="131" x2="233" y2="612" stroke="#c7c7cc" stroke-width="1"/>
+<text x="52" y="164" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">General</text>
+<text x="48" y="206" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11" fill="#8e8e93" font-weight="700" text-anchor="start">PROFILES</text>
+<text x="52" y="238" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">Default</text>
+<text x="109.80000000000001" y="238" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11" fill="#8e8e93" font-weight="400" text-anchor="start">built-in</text>
+<text x="216" y="238" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11.5" fill="#8e8e93" font-weight="400" text-anchor="end">3</text>
+<rect x="40" y="252" width="186" height="30" rx="6" fill="#e4e4e8"/>
+<text x="52" y="272" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="600" text-anchor="start">Presenting</text>
+<text x="216" y="272" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11.5" fill="#8e8e93" font-weight="400" text-anchor="end">2</text>
+<line x1="33" y1="568" x2="233" y2="568" stroke="#c7c7cc" stroke-width="1"/>
+<text x="48" y="595" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#2f6fde" font-weight="500" text-anchor="start">+  New Profile…</text>
+<rect x="33" y="131" width="758" height="480" rx="0" fill="#00000022"/>
+<rect x="204" y="135" width="420" height="330" rx="10" fill="#0000001f"/>
+<rect x="202" y="131" width="420" height="330" rx="10" fill="#ffffff" stroke="#c7c7cc" stroke-width="1"/>
+<text x="226" y="167" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="16" fill="#1d1d1f" font-weight="700" text-anchor="start">New Profile</text>
+<text x="226" y="199" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d1d1f" font-weight="600" text-anchor="start">Name</text>
+<rect x="226" y="207" width="372" height="30" rx="6" fill="#ffffff" stroke="#2f6fde" stroke-width="2"/>
+<text x="236" y="227" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">Late night</text>
+<text x="226" y="255" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11.5" fill="#8e8e93" font-weight="400" text-anchor="start">Must be unique and not empty.</text>
+<text x="226" y="283" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d1d1f" font-weight="600" text-anchor="start">Start from</text>
+<circle cx="234" cy="303" r="7" fill="#ffffff" stroke="#2f6fde" stroke-width="5"/>
+<text x="250" y="307" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">Default — follow it for everything</text>
+<text x="250" y="324" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11.5" fill="#636366" font-weight="400" text-anchor="start">Later changes to Default flow through.</text>
+<circle cx="234" cy="349" r="7" fill="#ffffff" stroke="#c7c7cc" stroke-width="1.5"/>
+<text x="250" y="353" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">A copy of “Presenting”</text>
+<text x="250" y="370" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11.5" fill="#636366" font-weight="400" text-anchor="start">Starts with its overrides (text size 18 pt).</text>
+<rect x="226" y="389" width="14" height="14" rx="3" fill="#2f6fde"/>
+<text x="233" y="401" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11" fill="#fff" font-weight="700" text-anchor="middle">✓</text>
+<text x="248" y="401" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">Open a new tab with it</text>
+<rect x="422" y="417" width="84" height="28" rx="6" fill="#ffffff" stroke="#c7c7cc" stroke-width="1"/>
+<text x="464.0" y="435.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="500" text-anchor="middle">Cancel</text>
+<rect x="516" y="417" width="84" height="28" rx="6" fill="#2f6fde"/>
+<text x="558.0" y="435.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#fff" font-weight="500" text-anchor="middle">Create</text>
+<line x1="644" y1="223" x2="598" y2="223" stroke="#c2410c" stroke-width="1.2" stroke-dasharray="3 3"/>
+<circle cx="598" cy="223" r="3" fill="#c2410c"/>
+<circle cx="644" cy="223" r="11" fill="#c2410c"/>
+<text x="644" y="227.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">1</text>
+<line x1="644" y1="327" x2="502" y2="327" stroke="#c2410c" stroke-width="1.2" stroke-dasharray="3 3"/>
+<circle cx="502" cy="327" r="3" fill="#c2410c"/>
+<circle cx="644" cy="327" r="11" fill="#c2410c"/>
+<text x="644" y="331.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">2</text>
+<line x1="644" y1="397" x2="412" y2="397" stroke="#c2410c" stroke-width="1.2" stroke-dasharray="3 3"/>
+<circle cx="412" cy="397" r="3" fill="#c2410c"/>
+<circle cx="644" cy="397" r="11" fill="#c2410c"/>
+<text x="644" y="401.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">3</text>
+<line x1="644" y1="431" x2="600" y2="431" stroke="#c2410c" stroke-width="1.2" stroke-dasharray="3 3"/>
+<circle cx="600" cy="431" r="3" fill="#c2410c"/>
+<circle cx="644" cy="431" r="11" fill="#c2410c"/>
+<text x="644" y="435.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">4</text>
+<text x="830" y="120" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" fill="#1d1d1f" font-weight="700" text-anchor="start">Notes</text>
+<circle cx="841" cy="142" r="11" fill="#c2410c"/>
+<text x="841" y="146.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">1</text>
+<text x="860" y="146" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d1d1f" font-weight="600" text-anchor="start">Name, focused, pre-filled “New Profile”</text>
+<text x="860" y="163" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">Return = Create, Esc = Cancel.</text>
+<text x="860" y="180" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">Duplicate name → inline error, Create disabled.</text>
+<circle cx="841" cy="207" r="11" fill="#c2410c"/>
+<text x="841" y="211.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">2</text>
+<text x="860" y="211" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d1d1f" font-weight="600" text-anchor="start">Two starting points</text>
+<text x="860" y="228" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">Inherit is the default choice; “copy” names</text>
+<text x="860" y="245" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">the profile it copies (the selected one).</text>
+<text x="860" y="262" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">One level only: profiles inherit from</text>
+<text x="860" y="279" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">Default, never from each other.</text>
+<circle cx="841" cy="306" r="11" fill="#c2410c"/>
+<text x="841" y="310.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">3</text>
+<text x="860" y="310" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d1d1f" font-weight="600" text-anchor="start">Optional: try it right away</text>
+<text x="860" y="327" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">Profiles belong to panes, so this opens</text>
+<text x="860" y="344" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">one that uses it.</text>
+<circle cx="841" cy="371" r="11" fill="#c2410c"/>
+<text x="841" y="375.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">4</text>
+<text x="860" y="375" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d1d1f" font-weight="600" text-anchor="start">The only modal step in Settings</text>
+<text x="860" y="392" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">Everything else saves as you change it.</text>
+</svg>
