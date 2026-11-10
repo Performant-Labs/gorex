@@ -1,0 +1,223 @@
+=== RUN   TestPanesAndTabs
+2026/11/09 19:09:43 rex: serving on /tmp/gorexNNN/server.sock (pid 88496)
+--- PASS: TestPanesAndTabs (1.45s)
+=== RUN   TestRestore
+2026/11/09 19:09:44 rex: serving on /tmp/gorexNNN/server.sock (pid 88496)
+--- PASS: TestRestore (0.35s)
+=== RUN   TestLabels
+--- PASS: TestLabels (0.00s)
+=== RUN   TestCloseButtons
+2026/11/09 19:09:45 rex: serving on /tmp/gorexNNN/server.sock (pid 88496)
+--- PASS: TestCloseButtons (1.05s)
+=== RUN   TestPaletteScrolls
+--- PASS: TestPaletteScrolls (0.09s)
+=== RUN   TestSettingsFirstLaunch
+    settings_test.go:260: Settings does not show "General"; texts []
+    settings_test.go:260: Settings does not show "These apply to the whole app, whatever profile a pane uses."; texts []
+    settings_test.go:260: Settings does not show "Appearance"; texts []
+    settings_test.go:260: Settings does not show "System"; texts []
+    settings_test.go:260: Settings does not show "Light"; texts []
+    settings_test.go:260: Settings does not show "Dark"; texts []
+    settings_test.go:260: Settings does not show "Default"; texts []
+    settings_test.go:260: Settings does not show "built-in"; texts []
+    settings_test.go:260: Settings does not show "Changes apply and save as you make them."; texts []
+    settings_test.go:264: Settings has no PROFILES heading; texts []
+--- FAIL: TestSettingsFirstLaunch (0.01s)
+=== RUN   TestSettingsMenuItem
+    settings_test.go:288: the app menu has no Settings… with CmdOrCtrl+,: <nil>
+--- FAIL: TestSettingsMenuItem (0.00s)
+=== RUN   TestSettingsOpensOnce
+    settings_test.go:342: the menu has no item "Settings…"
+--- FAIL: TestSettingsOpensOnce (0.00s)
+=== RUN   TestCommandsFromSettings
+    settings_test.go:381: Split Right from Settings: runs true, want false
+    settings_test.go:384: Split Right from no window: runs true, want false
+    settings_test.go:381: Split Down from Settings: runs true, want false
+    settings_test.go:384: Split Down from no window: runs true, want false
+    settings_test.go:381: Zoom Pane from Settings: runs true, want false
+    settings_test.go:384: Zoom Pane from no window: runs true, want false
+    settings_test.go:381: Equalize Panes from Settings: runs true, want false
+    settings_test.go:384: Equalize Panes from no window: runs true, want false
+    settings_test.go:381: Close Pane from Settings: runs true, want false
+    settings_test.go:384: Close Pane from no window: runs true, want false
+    settings_test.go:381: Close Tab from Settings: runs true, want false
+    settings_test.go:384: Close Tab from no window: runs true, want false
+    settings_test.go:381: Next Tab from Settings: runs true, want false
+    settings_test.go:384: Next Tab from no window: runs true, want false
+    settings_test.go:381: Previous Tab from Settings: runs true, want false
+    settings_test.go:384: Previous Tab from no window: runs true, want false
+    settings_test.go:381: Rename Tab… from Settings: runs true, want false
+    settings_test.go:384: Rename Tab… from no window: runs true, want false
+    settings_test.go:381: Focus Pane Left from Settings: runs true, want false
+    settings_test.go:384: Focus Pane Left from no window: runs true, want false
+    settings_test.go:381: Focus Pane Right from Settings: runs true, want false
+    settings_test.go:384: Focus Pane Right from no window: runs true, want false
+    settings_test.go:381: Focus Pane Above from Settings: runs true, want false
+    settings_test.go:384: Focus Pane Above from no window: runs true, want false
+    settings_test.go:381: Focus Pane Below from Settings: runs true, want false
+    settings_test.go:384: Focus Pane Below from no window: runs true, want false
+    settings_test.go:381: Move Divider Left from Settings: runs true, want false
+    settings_test.go:384: Move Divider Left from no window: runs true, want false
+    settings_test.go:381: Move Divider Right from Settings: runs true, want false
+    settings_test.go:384: Move Divider Right from no window: runs true, want false
+    settings_test.go:381: Move Divider Up from Settings: runs true, want false
+    settings_test.go:384: Move Divider Up from no window: runs true, want false
+    settings_test.go:381: Move Divider Down from Settings: runs true, want false
+    settings_test.go:384: Move Divider Down from no window: runs true, want false
+    settings_test.go:393: Bigger Text from Settings, no main window: runs false, want true
+    settings_test.go:396: Bigger Text from no window, no main window: runs false, want true
+    settings_test.go:393: Smaller Text from Settings, no main window: runs false, want true
+    settings_test.go:396: Smaller Text from no window, no main window: runs false, want true
+    settings_test.go:393: Actual Size from Settings, no main window: runs false, want true
+    settings_test.go:396: Actual Size from no window, no main window: runs false, want true
+    settings_test.go:393: Appearance: Light from Settings, no main window: runs false, want true
+    settings_test.go:396: Appearance: Light from no window, no main window: runs false, want true
+    settings_test.go:393: Appearance: Dark from Settings, no main window: runs false, want true
+    settings_test.go:396: Appearance: Dark from no window, no main window: runs false, want true
+    settings_test.go:393: Appearance: System from Settings, no main window: runs false, want true
+    settings_test.go:396: Appearance: System from no window, no main window: runs false, want true
+    settings_test.go:381: Clear Scrollback from Settings: runs true, want false
+    settings_test.go:384: Clear Scrollback from no window: runs true, want false
+    settings_test.go:381: Restart Shell in Pane from Settings: runs true, want false
+    settings_test.go:384: Restart Shell in Pane from no window: runs true, want false
+    settings_test.go:381: Command Palette… from Settings: runs true, want false
+    settings_test.go:384: Command Palette… from no window: runs true, want false
+    settings_test.go:381: Go to Pane… from Settings: runs true, want false
+    settings_test.go:384: Go to Pane… from no window: runs true, want false
+    settings_test.go:381: Clear Screen and Scrollback from Settings: runs true, want false
+    settings_test.go:384: Clear Screen and Scrollback from no window: runs true, want false
+--- FAIL: TestCommandsFromSettings (0.00s)
+=== RUN   TestMenuClicksFromSettings
+    settings_test.go:413: Bigger Text from Settings with no main window: text size 11.6, want 12.6
+    settings_test.go:415: Bigger Text from no window: text size 11.6, want 13.6
+    settings_test.go:419: Close Pane from Settings closed [], want Settings <nil>
+    settings_test.go:427: New Tab from Settings focused [], not the main window
+--- FAIL: TestMenuClicksFromSettings (0.00s)
+=== RUN   TestEndAllNeedsMainWindow
+2026/11/09 19:09:46 rex: serving on /tmp/gorexNNN/server.sock (pid 88496)
+    settings_test.go:445: Quit and End All Sessions with no main window set quitting
+    settings_test.go:449: the session server shut down, ending the sessions: stat /tmp/gorexNNN/server.sock: no such file or directory
+--- FAIL: TestEndAllNeedsMainWindow (0.69s)
+=== RUN   TestSettingsAppearanceInStep
+    settings_test.go:460: ui: no element shows "Dark"; texts []
+--- FAIL: TestSettingsAppearanceInStep (0.01s)
+=== RUN   TestSettingsTextSize
+    settings_test.go:487: ui: no element shows "Default"; texts []
+--- FAIL: TestSettingsTextSize (0.00s)
+=== RUN   TestSettingsMigratesV1
+=== RUN   TestSettingsMigratesV1/dark
+    settings_test.go:552: settings.json is not version 2:
+        {"appearance":"dark","fontSize":14}
+=== RUN   TestSettingsMigratesV1/system
+    settings_test.go:550: loading {"fontSize":13} applied "dark", want "system"
+    settings_test.go:552: settings.json is not version 2:
+        {"fontSize":13}
+=== RUN   TestSettingsMigratesV1/no_size
+    settings_test.go:548: after loading {"appearance":"light"}: text size 13, want 11.6
+    settings_test.go:552: settings.json is not version 2:
+        {"appearance":"light"}
+=== RUN   TestSettingsMigratesV1/too_big
+    settings_test.go:548: after loading {"appearance":"light","fontSize":50}: text size 11.6, want 32
+    settings_test.go:552: settings.json is not version 2:
+        {"appearance":"light","fontSize":50}
+=== RUN   TestSettingsMigratesV1/too_small
+    settings_test.go:548: after loading {"fontSize":7}: text size 7, want 8
+    settings_test.go:550: loading {"fontSize":7} applied "light", want "system"
+    settings_test.go:552: settings.json is not version 2:
+        {"fontSize":7}
+--- FAIL: TestSettingsMigratesV1 (0.01s)
+    --- FAIL: TestSettingsMigratesV1/dark (0.00s)
+    --- FAIL: TestSettingsMigratesV1/system (0.00s)
+    --- FAIL: TestSettingsMigratesV1/no_size (0.00s)
+    --- FAIL: TestSettingsMigratesV1/too_big (0.00s)
+    --- FAIL: TestSettingsMigratesV1/too_small (0.00s)
+=== RUN   TestSettingsMigrationOverwritesOldBackup
+    settings_test.go:574: settings.v1.json holds "{\"old\":true}", want "{\"appearance\":\"dark\",\"fontSize\":14}"
+    settings_test.go:576: settings.json is not version 2:
+        {"appearance":"dark","fontSize":14}
+--- FAIL: TestSettingsMigrationOverwritesOldBackup (0.00s)
+=== RUN   TestSettingsV2Load
+=== RUN   TestSettingsV2Load/too_big
+    settings_test.go:593: after loading {"version":2,"appearance":"dark","profiles":{"default":{"name":"Default","fontSize":100}}}: text size 14, want 32
+    settings_test.go:595: settings.json is not version 2:
+        {
+          "appearance": "dark",
+          "fontSize": 14
+        }
+=== RUN   TestSettingsV2Load/no_profiles
+    settings_test.go:593: after loading {"version":2,"appearance":"light"}: text size 14, want 11.6
+    settings_test.go:595: settings.json is not version 2:
+        {
+          "appearance": "light",
+          "fontSize": 14
+        }
+=== RUN   TestSettingsV2Load/renamed
+    settings_test.go:593: after loading {"version":2,"appearance":"light","profiles":{"default":{"name":"Mine","fontSize":15}}}: text size 14, want 15
+    settings_test.go:595: settings.json is not version 2:
+        {
+          "appearance": "light",
+          "fontSize": 14
+        }
+=== RUN   TestSettingsV2Load/no_size
+    settings_test.go:593: after loading {"version":2,"appearance":"system","profiles":{"default":{"name":"Default"}}}: text size 14, want 11.6
+    settings_test.go:595: settings.json is not version 2:
+        {
+          "appearance": "system",
+          "fontSize": 14
+        }
+--- FAIL: TestSettingsV2Load (0.01s)
+    --- FAIL: TestSettingsV2Load/too_big (0.00s)
+    --- FAIL: TestSettingsV2Load/no_profiles (0.00s)
+    --- FAIL: TestSettingsV2Load/renamed (0.00s)
+    --- FAIL: TestSettingsV2Load/no_size (0.00s)
+=== RUN   TestSettingsSurviveRestart
+    settings_test.go:606: settings.json is not version 2:
+        {
+          "appearance": "dark",
+          "fontSize": 15
+        }
+--- FAIL: TestSettingsSurviveRestart (0.00s)
+=== RUN   TestSettingsReadOnly
+=== RUN   TestSettingsReadOnly/newer
+    settings_test.go:675: settings.json was overwritten:
+        {
+          "appearance": "light",
+          "fontSize": 17
+        }
+    settings_test.go:685: Settings does not say changes are not saved because "settings.json is newer than this version of GoRex"; texts []
+=== RUN   TestSettingsReadOnly/invalid
+    settings_test.go:664: after loading: text size 17, want 11.6
+    settings_test.go:675: settings.json was overwritten:
+        {
+          "appearance": "light",
+          "fontSize": 17
+        }
+    settings_test.go:685: Settings does not say changes are not saved because "settings.json could not be read"; texts []
+=== RUN   TestSettingsReadOnly/backup_fails
+    settings_test.go:675: settings.json was overwritten:
+        {
+          "appearance": "light",
+          "fontSize": 17
+        }
+    settings_test.go:685: Settings does not say changes are not saved because "the settings backup could not be written"; texts []
+--- FAIL: TestSettingsReadOnly (0.01s)
+    --- FAIL: TestSettingsReadOnly/newer (0.00s)
+    --- FAIL: TestSettingsReadOnly/invalid (0.00s)
+    --- FAIL: TestSettingsReadOnly/backup_fails (0.01s)
+=== RUN   TestSettingsKeysOnWindows
+    settings_test.go:699: Settings handles these keys itself only on Windows
+--- SKIP: TestSettingsKeysOnWindows (0.00s)
+=== RUN   TestReadmeSettings
+    settings_test.go:743: the Shortcuts table has no row with ⌘, and Ctrl+,
+    settings_test.go:761: the Shift rule does not name Ctrl+, with Ctrl+=:
+        
+        Elsewhere than on macOS, Control and a letter are the terminal's (Ctrl+C,
+        Ctrl+D, Ctrl+W…), so GoRex's shortcuts take Shift too, as copying and
+        pasting do (Ctrl+Shift+C, Ctrl+Shift+V), and none take Control and Alt,
+        which type characters (AltGr) on many keyboards.
+        
+    settings_test.go:781: README's Layout table does not list stubs.go
+--- FAIL: TestReadmeSettings (0.03s)
+FAIL
+FAIL	gorex	3.738s
+FAIL
