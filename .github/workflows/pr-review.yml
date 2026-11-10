@@ -16,10 +16,6 @@ on:
   issue_comment:
     types: [created]
 
-concurrency:
-  group: pr-agent-${{ github.event.pull_request.number || github.event.issue.number }}
-  cancel-in-progress: ${{ github.event_name != 'issue_comment' }}
-
 permissions:
   contents: read
   pull-requests: write
@@ -36,6 +32,13 @@ jobs:
        github.event.issue.pull_request &&
        startsWith(github.event.comment.body, '/review') &&
        contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association))
+    # On the job, not the workflow: a group at workflow level is taken before the job's `if`, so
+    # any comment's run would join it and replace a queued `/review`, then be skipped. Here only a
+    # run that passes the `if` takes a slot. A push cancels a superseded review; a `/review` comment
+    # never cancels a running one.
+    concurrency:
+      group: pr-agent-${{ github.event.pull_request.number || github.event.issue.number }}
+      cancel-in-progress: ${{ github.event_name != 'issue_comment' }}
     steps:
       # The review guard at the end counts only comments written after this point, so a
       # review left by an earlier run (a previous push, a `/review` comment) cannot pass it.
