@@ -5,7 +5,8 @@
     "DUAL_REVIEW_PROVIDER": "deepseek",
     "DUAL_REVIEW_API_KEY_VAR": "DEEPSEEK_API_KEY",
     "DUAL_REVIEW_TRANSPORT": "chat",
-    "DUAL_REVIEW_CHAT_PATH": "/chat/completions"
+    "DUAL_REVIEW_CHAT_PATH": "/chat/completions",
+    "OPENAI_BASE_URL": "https://api.deepseek.com"
   },
   "stages": {
     "D": {
