@@ -1,0 +1,96 @@
+{
+  "testCommands": [
+    "go vet ./...",
+    "go test -count=1 -race ./..."
+  ],
+  "pathSets": {
+    "tests": [
+      "a*_test.go",
+      "b*_test.go",
+      "c*_test.go",
+      "d*_test.go",
+      "e*_test.go",
+      "f*_test.go",
+      "g*_test.go",
+      "h*_test.go",
+      "i*_test.go",
+      "j*_test.go",
+      "k*_test.go",
+      "l*_test.go",
+      "m*_test.go",
+      "n*_test.go",
+      "o*_test.go",
+      "p*_test.go",
+      "q*_test.go",
+      "r*_test.go",
+      "s*_test.go",
+      "t*_test.go",
+      "u*_test.go",
+      "v*_test.go",
+      "w*_test.go",
+      "x*_test.go",
+      "y*_test.go",
+      "z*_test.go"
+    ],
+    "handoffs": [
+      "docs/handoffs/**"
+    ],
+    "production": [
+      "a*.go",
+      "b*.go",
+      "c*.go",
+      "d*.go",
+      "e*.go",
+      "f*.go",
+      "g*.go",
+      "h*.go",
+      "i*.go",
+      "j*.go",
+      "k*.go",
+      "l*.go",
+      "m*.go",
+      "n*.go",
+      "o*.go",
+      "p*.go",
+      "q*.go",
+      "r*.go",
+      "s*.go",
+      "t*.go",
+      "u*.go",
+      "v*.go",
+      "w*.go",
+      "x*.go",
+      "y*.go",
+      "z*.go",
+      "internal/**",
+      "tools/**",
+      "resources/**",
+      "assets/**",
+      "go.mod",
+      "go.sum",
+      "mygo.json",
+      "README.md"
+    ],
+    "buildOutput": [
+      "build/**",
+      ".mygo/**"
+    ]
+  },
+  "mergeMode": "auto",
+  "toolchain": "go",
+  "testSuites": {
+    "unit": {
+      "filter": "none",
+      "script": [
+        "go vet ./...",
+        "go test -count=1 -race ./..."
+      ],
+      "timeoutMs": 900000
+    }
+  },
+  "handoffDirectory": "docs/handoffs",
+  "defaultIsolationLevel": "worktree",
+  "gitHooks": {
+    "required": false
+  }
+}
