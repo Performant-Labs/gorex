@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="640" viewBox="0 0 1240 640">
+<rect x="0" y="0" width="1240" height="640" rx="0" fill="#fafafa"/>
+<text x="32" y="40" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" fill="#1d1d1f" font-weight="700" text-anchor="start">1 · Settings ▸ General — app-wide settings (first launch)</text>
+<text x="32" y="64" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#636366" font-weight="400" text-anchor="start">GoRex ▸ Settings… (⌘,)   ·   Windows / Linux: Edit ▸ Settings… (Ctrl+,)</text>
+<rect x="34" y="96" width="760" height="520" rx="12" fill="#00000014"/>
+<rect x="32" y="92" width="760" height="520" rx="12" fill="#ffffff" stroke="#c7c7cc" stroke-width="1"/>
+<circle cx="52" cy="110" r="6" fill="#ff5f57"/>
+<circle cx="72" cy="110" r="6" fill="#febc2e"/>
+<circle cx="92" cy="110" r="6" fill="#28c840"/>
+<text x="412.0" y="115" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="600" text-anchor="middle">Settings</text>
+<line x1="32" y1="130" x2="792" y2="130" stroke="#c7c7cc" stroke-width="1"/>
+<rect x="33" y="131" width="200" height="480" rx="0" fill="#f2f2f4"/>
+<line x1="233" y1="131" x2="233" y2="612" stroke="#c7c7cc" stroke-width="1"/>
+<rect x="40" y="144" width="186" height="30" rx="6" fill="#e4e4e8"/>
+<text x="52" y="164" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="600" text-anchor="start">General</text>
+<text x="48" y="206" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11" fill="#8e8e93" font-weight="700" text-anchor="start">PROFILES</text>
+<text x="52" y="238" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">Default</text>
+<text x="109.80000000000001" y="238" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11" fill="#8e8e93" font-weight="400" text-anchor="start">built-in</text>
+<line x1="33" y1="568" x2="233" y2="568" stroke="#c7c7cc" stroke-width="1"/>
+<text x="48" y="595" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#2f6fde" font-weight="500" text-anchor="start">+  New Profile…</text>
+<text x="258" y="168" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" fill="#1d1d1f" font-weight="700" text-anchor="start">General</text>
+<text x="258" y="190" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">These apply to the whole app, whatever profile a pane uses.</text>
+<line x1="258" y1="206" x2="768" y2="206" stroke="#c7c7cc" stroke-width="1"/>
+<text x="258" y="234" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="700" text-anchor="start">Appearance</text>
+<rect x="258" y="246" width="100" height="64" rx="8" fill="#f2f2f4" stroke="#2f6fde" stroke-width="2.5"/>
+<rect x="268" y="256" width="40" height="44" rx="4" fill="#ffffff" stroke="#c7c7cc" stroke-width="1"/>
+<rect x="308" y="256" width="40" height="44" rx="4" fill="#3a3340"/>
+<text x="308" y="328" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d1d1f" font-weight="600" text-anchor="middle">System</text>
+<rect x="370" y="246" width="100" height="64" rx="8" fill="#f2f2f4" stroke="#c7c7cc" stroke-width="1"/>
+<rect x="380" y="256" width="80" height="44" rx="4" fill="#ffffff" stroke="#c7c7cc" stroke-width="1"/>
+<text x="420" y="328" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d1d1f" font-weight="400" text-anchor="middle">Light</text>
+<rect x="482" y="246" width="100" height="64" rx="8" fill="#f2f2f4" stroke="#c7c7cc" stroke-width="1"/>
+<rect x="492" y="256" width="80" height="44" rx="4" fill="#3a3340"/>
+<text x="532" y="328" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d1d1f" font-weight="400" text-anchor="middle">Dark</text>
+<text x="258" y="360" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#8e8e93" font-weight="400" text-anchor="start" font-style="italic">Later: notifications, confirm before quitting, … — app behaviour, not terminals.</text>
+<text x="258" y="594" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11.5" fill="#8e8e93" font-weight="400" text-anchor="start" font-style="italic">Changes apply and save as you make them.</text>
+<line x1="182" y1="204" x2="152" y2="159" stroke="#c2410c" stroke-width="1.2" stroke-dasharray="3 3"/>
+<circle cx="152" cy="159" r="3" fill="#c2410c"/>
+<circle cx="182" cy="204" r="11" fill="#c2410c"/>
+<text x="182" y="208.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">1</text>
+<line x1="618" y1="278" x2="578" y2="278" stroke="#c2410c" stroke-width="1.2" stroke-dasharray="3 3"/>
+<circle cx="578" cy="278" r="3" fill="#c2410c"/>
+<circle cx="618" cy="278" r="11" fill="#c2410c"/>
+<text x="618" y="282.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">2</text>
+<line x1="182" y1="272" x2="162" y2="242" stroke="#c2410c" stroke-width="1.2" stroke-dasharray="3 3"/>
+<circle cx="162" cy="242" r="3" fill="#c2410c"/>
+<circle cx="182" cy="272" r="11" fill="#c2410c"/>
+<text x="182" y="276.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">3</text>
+<circle cx="152" cy="552" r="11" fill="#c2410c"/>
+<text x="152" y="556.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">4</text>
+<circle cx="452" cy="60" r="11" fill="#c2410c"/>
+<text x="452" y="64.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">5</text>
+<text x="830" y="120" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" fill="#1d1d1f" font-weight="700" text-anchor="start">Notes</text>
+<circle cx="841" cy="142" r="11" fill="#c2410c"/>
+<text x="841" y="146.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">1</text>
+<text x="860" y="146" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d1d1f" font-weight="600" text-anchor="start">Two layers, as in iTerm2</text>
+<text x="860" y="163" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">General = the app. Profiles = how a</text>
+<text x="860" y="180" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">terminal pane looks and behaves.</text>
+<circle cx="841" cy="207" r="11" fill="#c2410c"/>
+<text x="841" y="211.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">2</text>
+<text x="860" y="211" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d1d1f" font-weight="600" text-anchor="start">Appearance is app-wide</text>
+<text x="860" y="228" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">Light/Dark is the app's look, not a</text>
+<text x="860" y="245" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">pane's (iTerm2: Appearance ▸ Theme).</text>
+<circle cx="841" cy="272" r="11" fill="#c2410c"/>
+<text x="841" y="276.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">3</text>
+<text x="860" y="276" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d1d1f" font-weight="600" text-anchor="start">Default is the only profile at first</text>
+<text x="860" y="293" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">Built in: every pane uses it, every other</text>
+<text x="860" y="310" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">profile inherits from it. Count = panes using it.</text>
+<circle cx="841" cy="337" r="11" fill="#c2410c"/>
+<text x="841" y="341.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">4</text>
+<text x="860" y="341" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d1d1f" font-weight="600" text-anchor="start">New Profile… pinned to the bottom</text>
+<text x="860" y="358" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start"></text>
+<circle cx="841" cy="385" r="11" fill="#c2410c"/>
+<text x="841" y="389.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">5</text>
+<text x="860" y="389" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d1d1f" font-weight="600" text-anchor="start">macOS 13+ calls it “Settings…”</text>
+<text x="860" y="406" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">GoRex's minimum is 13.0. Windows and</text>
+<text x="860" y="423" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">Linux have no app menu, so: Edit.</text>
+</svg>
