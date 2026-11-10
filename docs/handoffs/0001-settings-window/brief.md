@@ -38,6 +38,14 @@ The new format, with only the built-in Default profile in this story:
   `settings.go:18`), which today reads as 0 and is replaced by 11.6 (`settings.go:31-33`). Such a file
   migrates to `profiles.default.fontSize` 11.6, as "Default cannot be removed" below restores a missing
   value, and is not clamped up to 8.
+  Go's `json` reads a missing number as 0, so the migration cannot tell a missing `fontSize` from a
+  hand-written `"fontSize": 0`. Both are treated as missing and become 11.6. Only a value greater than 0
+  is clamped to 8–32.
+- **A failed backup stops the migration.** If `settings.v1.json` cannot be written (for example a
+  read-only directory or a full disk), the v1 file is not overwritten. The app runs on the migrated values
+  in memory, and the file is loaded read-only for the rest of the run, as in §6 "Write gate". So the user's
+  v1 file is never replaced unless its byte-for-byte copy exists. The next launch tries the migration
+  again.
 - **Clamping.** Text size is 8–32 pt everywhere. Today loading accepts 6–40 while `setFontSize` clamps to
   8–32, so a v1 value outside 8–32 is clamped on load. Today's code (`settings.go`):
 
@@ -300,7 +308,10 @@ The claims above, checked against this branch and against mygo
   **Verified safe under `go test` after `NewMenu` ran:** the probe
   (`scratchpad/mygoprobe/probe_test.go`, re-run for this amendment) builds radio items with
   `mygo.NewMenu`, calls `SetChecked(true)` on one and reports `SetChecked(dark): returned` and
-  `after SetChecked: light=false dark=true`. So §3 needs no guard: tests call `a.menu()` and
+  `after SetChecked: light=false dark=true`. The probe and its full output are committed in
+  `docs/handoffs/0001-settings-window/evidence/mygoprobe/` (`probe_test.go`, `go.mod`, `output.txt`), built
+  against the same pinned mygo (`v0.3.5-0.20261008155018-bad73d119dc8`) as this repository's `go.mod`, and
+  re-run for this amendment with the same result. So §3 needs no guard: tests call `a.menu()` and
   `SetChecked`, and assert `IsChecked()`. The probe ran on darwin only; Linux and Windows share the
   same `update` / `postMain` path in `menu.go` and `loop.go`.
 - **`onMain` waits** (§6, §8 list): `loop.go:87-100`:
@@ -414,10 +425,15 @@ profile-related palette entries; overrides, Reset and inheritance UI.
    is restored.
 8. Settings survive a restart. A missing, invalid or newer-version file never crashes the app or loses the
    user's file, including after a setting is changed later in the same run (§6 "Write gate").
+   If the `settings.v1.json` backup cannot be written, the v1 file is left as it was (§1 "A failed backup
+   stops the migration").
 9. On Windows, Esc and Ctrl+W close the Settings window, and Ctrl+, with Settings focused keeps that one
    window in front without opening a second (§2 "Windows").
-10. ⌘W (Ctrl+W on Windows and Linux) with Settings frontmost closes Settings and closes no pane. ⌘T, ⌘D
-    and ⌘K with Settings frontmost do not act on the hidden main window.
+10. With Settings frontmost, its close shortcuts close Settings and close no pane: ⌘W on macOS; on
+    Windows, Ctrl+W and Esc (Settings' own handling, §2); on Linux, Ctrl+W (Window ▸ Close Window,
+    `RoleClose`); and on Windows and Linux, Ctrl+Shift+W (Close Pane's shortcut there, which from Settings
+    closes Settings, §4). With Settings frontmost, ⌘T, ⌘D, ⌘K and ⌘1–⌘9 (their Ctrl+Shift equivalents
+    elsewhere) do not act on the hidden main window.
 11. GoRex ▸ Settings… works after the main window is closed, and clicking the Dock icon with only
     Settings open brings the main window back (the `OnActivate` change, §4 "App lifecycle"). Clicking the
     Dock icon with no window open still reopens the main window, clicking it with the main window open

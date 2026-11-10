@@ -4,24 +4,28 @@
 None.
 
 ### Resolved findings
-**[R-1]** "[B-1] Acceptance criterion 6 contradicts the clamping rule. AC6 states 'A v1 file migrates to v2 on first load: appearance and text size are unchanged' … for a v1 file with, say, `fontSize: 40`, the text size is *not* unchanged …" — the amended brief now carries the exception in both places: §1 ("A user's appearance and text size look exactly the same after the migration, except that a text size outside 8–32 is clamped") and AC6 ("unchanged (`""` becomes `"system"`), except that a text size outside 8–32 is clamped per criterion 5 and a missing text size becomes 11.6"). The contradiction is gone; AC6 is now testable as written.
+**[R-1]** [B-1] "§3 says '**No guard is needed**' for headless `SetChecked` in tests, but §8's verified-source note on `SetChecked` says the opposite … Two parts of the brief directly disagree." — The amended brief makes §3 and §8 agree: both now state no guard is needed, supported by a re-run probe whose reported output (`SetChecked(dark): returned`, `after SetChecked: light=false dark=true`) is quoted in §8's excerpts section. The contradiction is gone; the probe's reality remains a needs-verification item (see NV-1).
+
+**[R-2]** [B-2] "Criterion 11 and §4 'App lifecycle' are contradicted by the shown code … §5 'Reuse & extend-vs-new' lists no such change to `OnActivate`." — The brief now states the change explicitly in §4 ("**change `main.go:46-50`** to drop the `hasVisibleWindows` condition"), lists it in §5 ("**EXTEND** the `OnActivate` handler … drop `!hasVisibleWindows &&`"), and walks each non-regression path (no window at all, main window open, `OnWindowAllClosed`, ⌘-Tab). Criterion 11 is now consistent with the shown `main.go:46-50` and with the plan.
 
 ### Needs-verification findings
-**[NV-1]** "`SetChecked` … touches the backend only when the item has a `uid` … whether the post is safe under `go test` after `menu()` ran is not verified here, hence the guard in §3" — mygo `menu.go:219-226`, `:247-264`, `:302-308` and `loop.go:18-31`; the brief itself flags this as unverified, so the guard's necessity/sufficiency (does `backend().Signal()` panic headless?) must be confirmed against those excerpts.
-**[NV-2]** "mygo's darwin surface does not override `performKeyEquivalent` … the macOS Window menu role has no Close item" (§4, underpinning AC10's macOS claims) — mygo `menu.go:672-681`, `:575-576`, `:507-508`, and `internal/darwin` (only `testhooks.go:58` mentions the selector); the grep result is described but the darwin source is not shown here.
-**[NV-3]** "`prepareItem` fills a role's submenu only when none is set" (§5 Menu placement) — mygo `menu.go:325-327`, quoted in §8; consistent with the quoted text, but the surrounding construction path is not shown.
-**[NV-4]** "`NewWindow` off the main thread calls `App.waitReady()`" and "`WindowOptions.StateKey string`" — mygo `window.go:294-295`, `:153-160`.
-**[NV-5]** "In legacy terminal encoding Ctrl+, sends nothing" (the README exception rationale) — a terminal control-character table showing 0x2C maps to no C0 code.
-**[NV-6]** `ui.KeyComma` exists in mygo's key constants (§5 adds `ui.KeyComma: ","` to `shortcut.String()`'s map, whose shown excerpt at `commands.go:116-121` does not include it) — mygo key-constant definitions.
-**[NV-7]** `ui.NewTester`'s `Key`/frame semantics suffice for the planned `settingsView` headless tests — the mygo tester source; `app_test.go:303-337` shows the pattern works for the palette, not for sliders.
+**[NV-1]** The probe results quoted in §8 (`SetChecked` safe headless after `NewMenu`; `Theme.SetSource`, `Focus`, `Close` blocking; `Invalidate` returning) — `scratchpad/mygoprobe/probe_test.go` and its `go test -count=1 -v` output are cited but not shown in this prompt. The probe file's contents and its recorded output would settle it.
+
+**[NV-2]** All the pinned-mygo line claims (menu.go:243-264 update/postMain, app.go:591 FocusedWindow, no `performKeyEquivalent` override outside testhooks.go:58, menu.go:325-327 role submenu, menu.go:507-508 RoleClose, window.go Focus/Close/NewWindow blocking, loop.go:87-100 onMain waits, ui/keys.go:45 KeyComma, plugins/terminal/keys.go:21) — the mygo module's source is not excerpted here; showing those lines would settle each.
+
+**[NV-3]** That Ctrl+, sends nothing in legacy terminal encoding on Windows/Linux (the basis of the README Shift-rule exception) — the brief itself concedes this is unverified ("legacy tables are not in the Go module"). The Ghostty native library's legacy encoding table, or the source the existing Ctrl+=/Ctrl− exception cites, would settle it.
+
+**[NV-4]** That a v1 file's `fontSize` of 0 ("missing") is distinguishable from a stored 0 during migration, given the shown struct uses `omitempty` — implementation detail of the new parser; showing the planned parse logic or the v1 JSON semantics (Go's `json` unmarshals a missing float field as 0, so the migration must treat 0 as missing) would settle it. Note the shown `settings.go:31-33` already treats 0 (via `<6`) as invalid, so the "missing → 11.6" rule is consistent with today's behaviour, but the brief should confirm a hand-written `"fontSize": 0` in a v1 file is also treated as missing.
 
 ### WARN findings
-**[W-1]** (carried from round 1, unresolved) The 8–32 slider with 1 pt steps cannot represent the shipped default 11.6 pt. The brief still only says "a value that is not a whole number stays as it is until it is changed" — it specifies the label, not where the thumb sits at 11.6 nor which whole value the first drag/click commits. AC1 and AC4 are testable only if this is pinned down; recommend specifying thumb position (floor or round) and first-commit value in §2 "Default page".
-**[W-2]** (carried, partly addressed) AC9 covers Esc/Ctrl+W on Windows; the Ctrl+Shift+W-vs-Ctrl+W distinction in §4 still has no explicit Linux coverage beyond AC10's wording. Low risk; recommend one clause in AC9 naming the platforms each shortcut applies on.
+**[W-1]** Criterion 10's parenthetical "⌘W (Ctrl+W on Windows and Linux)" mislabels the shortcut: per README.md:45 and the brief's own §4, Close Pane is ⌘W on macOS and Ctrl+Shift+W elsewhere; bare Ctrl+W elsewhere is the terminal's, and in Settings it closes via mygo's `RoleClose` default. Reword to "⌘W on macOS (Ctrl+Shift+W/Ctrl+W per §2 and §4 elsewhere)" so the criterion is testable as written on each platform.
+
+**[W-2]** The write-gate is specified for unreadable/invalid and newer-version files, but §1's migration path (v1 → copy to `settings.v1.json` → overwrite) has no stated behaviour if the copy fails (disk full, permissions). State whether a failed copy aborts the migration (leaving the v1 file in place, read-only) — otherwise "must not destroy the user's file" (§1 Robustness) is untestable in that path.
+
+**[W-3]** Criterion 7 says Default "cannot be removed or renamed by editing the file", but §1 only specifies restoration of missing `name`/`fontSize`; a hand-set `"name": "My Default"` is restored to "Default" per §1's last line, yet no acceptance test asserts the *rename* half, and the Settings sidebar label ("Default", "built-in") vs. the stored name needs one stated rule. Clarify that the UI label is always "Default" regardless of any stored name (or that the name is always rewritten to "Default" on load).
 
 ### NIT findings
-**[NIT-1]** §1's v2 example could note inline that a non-whole `fontSize` (11.6) persists until the user changes it, since the slider's whole-point steps will surprise the implementer otherwise.
-**[NIT-2]** AC11's Dock-icon behavior is macOS-only and untestable in `go test` — the criterion's "tested" scope should reference criterion 12's headless boundary explicitly.
+**[NIT-1]** Title "General and Default's text size" retains the stray apostrophe from the earlier round (carried forward); "General and Default text size" reads better. Cosmetic only.
 
 ### Verdict
 PASS — no BLOCK findings; implementation may proceed.

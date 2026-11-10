@@ -1,0 +1,10 @@
+=== RUN   TestProbe
+    probe_test.go:15: MenuItem.SetChecked after NewMenu: returned
+    probe_test.go:15: SetChecked(dark): returned
+    probe_test.go:38: after SetChecked: light=false dark=true
+    probe_test.go:17: Theme.SetSource(dark): BLOCKED (>3s)
+    probe_test.go:17: (&mygo.Window{}).Focus(): BLOCKED (>3s)
+    probe_test.go:15: (&mygo.Window{}).Invalidate(): returned
+--- PASS: TestProbe (6.01s)
+PASS
+ok  	probe	6.019s
