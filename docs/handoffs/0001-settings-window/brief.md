@@ -92,12 +92,14 @@ Wireframes, committed in this branch:
   as Close Pane's menu accelerator and the §4 window check makes it close Settings, but on Windows no menu
   shortcut runs in a native-UI window, so Settings' own key handling must match it and close the window
   through `closeWindow` (§6), exactly as for Esc and Ctrl+W (criteria 9 and 10). Because `shortcuts()`
-  runs only in the main window's view, the Settings window's own key handling on Windows also handles
-  **Ctrl+,** (`cmdSettings.Other`): it calls `openSettings()`, which focuses the one Settings window and
-  never makes a second (criteria 2 and 9). So that app-wide commands work from Settings on Windows as
+  runs only in the main window's view, Ctrl+, (`cmdSettings.Other`) in Settings on Windows comes from the
+  loop below: it calls `openSettings()`, which focuses the one Settings window and never makes a second
+  (criteria 2 and 9). So that app-wide commands work from Settings on Windows as
   they do on macOS and Linux, Settings' own key handling on Windows also loops over the app-wide commands'
   `Other` shortcuts from the `command` table, the way `shortcuts()` loops over the table for the main
-  window, and runs them as §4 says: Ctrl+= / Ctrl+- / Ctrl+0 change the text size and Ctrl+Shift+T opens a
+  window, and runs them as §4 says. That loop is the **only** path for Ctrl+, in Settings on Windows
+  (`cmdSettings` is app-wide, so its `Other` shortcut is in the loop); there is no separate hand-written
+  case, which would run `openSettings` twice. Through the loop, Ctrl+= / Ctrl+- / Ctrl+0 change the text size and Ctrl+Shift+T opens a
   tab in the main window (brought to the front). Commands that need the main window do nothing while
   Settings is focused there.
 - Ctrl+, on Windows and Linux breaks the README's rule that GoRex shortcuts take Shift, under the same
@@ -160,8 +162,8 @@ would act on the hidden main window.
   The app-wide commands are Settings…, New Tab (it opens the main window when it is closed, as today, and
   otherwise brings the main window to the front, then opens the tab in it through `a.do`, so from Settings
   it never acts on a hidden main window: the user sees the main window come forward with the new tab;
-  criterion 10), Bigger Text, Smaller Text, Actual Size, the three Appearance commands, Quit and End All
-  Sessions.
+  criterion 10), Bigger Text, Smaller Text, Actual Size, the three Appearance commands, and Quit and End
+  All Sessions while the main window is open (below).
   Every other command, including the palette, needs the main window. One helper decides whether a command
   runs for the window a click came from. `item()` uses it, the Show Tab 1–9 items (built today without
   `item()`) use it too, so ⌘1–⌘9 in Settings do nothing, and `App.run` uses the same field in place of its
@@ -175,10 +177,23 @@ would act on the hidden main window.
   Settings window (§3), because `a.do` redraws only the main window. The View ▸ Appearance radio items may
   keep calling `setAppearance` directly, as today (`commands.go:147-150`): a theme change redraws every
   window.
+- **Quit and End All Sessions needs the session server's connection.** `quitAndEnd` ends the sessions
+  through `a.client` (`commands.go:302-313`). `App.open` connects it (`main.go:66-73`), and the main
+  window's `OnClosed` closes it (`main.go:128`). With `a.win == nil` the connection is closed, `Shutdown()`
+  fails at once (`internal/rex/client.go:115-131`), `quitAndEnd` ignores the error and quits, and every
+  session would keep running. So with the main window open, Quit and End All Sessions is app-wide like the
+  others: from Settings too, it runs through `a.do`. With `a.win == nil` it does nothing, as today
+  (`commands.go:214-220`). `quitAndEnd` returns at once when `a.win == nil`. A test pins that with
+  `a.win == nil`, running `cmdEndAll` leaves `a.quitting` false. (Connecting a new client just to shut the
+  server down is new behaviour outside this delivery, and would open a server connection outside the main
+  window's lifecycle, which nothing else in GoRex does.)
 - **A click with no window.** mygo documents that a menu click's window may be nil (`menu.go:85-88`). On
   macOS it is `FocusedWindow()`, which is nil when no window is key, for example with the main window
-  minimised. The window-check helper treats nil like this: app-wide commands run (as above), and commands
-  that need the main window do nothing. A test pins both.
+  minimised. The window-check helper treats nil like this: app-wide commands run (as above), except Quit
+  and End All Sessions with `a.win == nil`, and commands that need the main window do nothing. A test pins
+  both, using **Bigger Text** (or an Appearance command through the Theme seam, §6) as the app-wide
+  command. It must not use New Tab, which with `a.win == nil` runs `mygo.RunOnMain(a.open)` and waits
+  forever headless, nor Quit and End All Sessions.
 - When the click came from the Settings window, Close Pane's item (⌘W on macOS, Ctrl+Shift+W elsewhere)
   closes Settings. That covers macOS and Linux, where the menu delivers the accelerator. On Windows,
   where native-UI windows run no menu shortcuts, Ctrl+Shift+W reaches neither the menu nor `shortcuts()`
@@ -308,6 +323,8 @@ Checked by the architecture reviewer against the pinned mygo source and a probe 
 - `internal/darwin/app.go:305`: `OnActivate` fires from `applicationShouldHandleReopen`.
 - `content.go:145-181`: `Invalidate` and `Update` are the only callers of `contentChanged`, so a window
   is redrawn only when one of them is called.
+- `main.go:128` (this repository): the main window's `OnClosed` closes `a.client`.
+- `internal/rex/client.go:115-131` (this repository): `call` fails at once on a lost or closed connection.
 - `menu.go:416-431`: `menuItemClicked` toggles a checkbox or radio item, runs its role, then calls
   `Click`, and requests no frame. So a menu command redraws the main window only through `a.do`.
 - `main.go:125-130` (this repository): the main window's `OnClosed` handler ends with `a.client.Close()`
