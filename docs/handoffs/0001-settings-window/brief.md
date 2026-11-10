@@ -94,9 +94,12 @@ Wireframes, committed in this branch:
   through `closeWindow` (§6), exactly as for Esc and Ctrl+W (criteria 9 and 10). Because `shortcuts()`
   runs only in the main window's view, the Settings window's own key handling on Windows also handles
   **Ctrl+,** (`cmdSettings.Other`): it calls `openSettings()`, which focuses the one Settings window and
-  never makes a second (criteria 2 and 9). On Windows Settings' own key handling handles exactly these
-  four keys (Esc, Ctrl+W, Ctrl+Shift+W, Ctrl+,); every other command shortcut, such as Ctrl+Shift+T, does
-  nothing while Settings is focused there.
+  never makes a second (criteria 2 and 9). So that app-wide commands work from Settings on Windows as
+  they do on macOS and Linux, Settings' own key handling on Windows also loops over the app-wide commands'
+  `Other` shortcuts from the `command` table, the way `shortcuts()` loops over the table for the main
+  window, and runs them as §4 says: Ctrl+= / Ctrl+- / Ctrl+0 change the text size and Ctrl+Shift+T opens a
+  tab in the main window (brought to the front). Commands that need the main window do nothing while
+  Settings is focused there.
 - Ctrl+, on Windows and Linux breaks the README's rule that GoRex shortcuts take Shift, under the same
   exception as Ctrl+= and Ctrl+- for text size: in legacy terminal encoding Ctrl+, sends nothing. Record
   this exception in README.md next to the existing one. "The existing one" is the Ctrl+= Ctrl+- Ctrl+0 row
@@ -155,13 +158,27 @@ would act on the hidden main window.
 - **One window check, one classification.** Add a field to the `command` table, next to `Hidden`, that
   marks a command **app-wide**: it runs whatever window is in front, and also when there is no main window.
   The app-wide commands are Settings…, New Tab (it opens the main window when it is closed, as today, and
-  otherwise brings the main window to the front before it opens the tab, so from Settings it never acts on
-  a hidden main window: the user sees the main window come forward with the new tab; criterion 10), Bigger Text, Smaller Text, Actual Size, the three Appearance commands, Quit and End All Sessions.
+  otherwise brings the main window to the front, then opens the tab in it through `a.do`, so from Settings
+  it never acts on a hidden main window: the user sees the main window come forward with the new tab;
+  criterion 10), Bigger Text, Smaller Text, Actual Size, the three Appearance commands, Quit and End All
+  Sessions.
   Every other command, including the palette, needs the main window. One helper decides whether a command
   runs for the window a click came from. `item()` uses it, the Show Tab 1–9 items (built today without
   `item()`) use it too, so ⌘1–⌘9 in Settings do nothing, and `App.run` uses the same field in place of its
-  New Tab–only exception. App-wide commands run directly, not through `a.do`, which drops work when
-  `a.win == nil`.
+  New Tab–only exception.
+- **How app-wide commands run.** App-wide commands run through `a.do` when the main window is open, so the
+  main window redraws after them as it does today (`a.do` "changes the state on the main thread, from a
+  menu, and draws", `commands.go:204`; mygo requests a frame only from `Update` and `Invalidate`, and a
+  menu click calls neither, §8). They run directly only when `a.win == nil`, where `a.do` would drop them.
+  New Tab with `a.win == nil` opens the main window as today (`a.open` makes its first tab). Otherwise it
+  calls `focusWindow(a.win)` and then runs `newTab` through `a.do`. The writers still `Invalidate()` an open
+  Settings window (§3), because `a.do` redraws only the main window. The View ▸ Appearance radio items may
+  keep calling `setAppearance` directly, as today (`commands.go:147-150`): a theme change redraws every
+  window.
+- **A click with no window.** mygo documents that a menu click's window may be nil (`menu.go:85-88`). On
+  macOS it is `FocusedWindow()`, which is nil when no window is key, for example with the main window
+  minimised. The window-check helper treats nil like this: app-wide commands run (as above), and commands
+  that need the main window do nothing. A test pins both.
 - When the click came from the Settings window, Close Pane's item (⌘W on macOS, Ctrl+Shift+W elsewhere)
   closes Settings. That covers macOS and Linux, where the menu delivers the accelerator. On Windows,
   where native-UI windows run no menu shortcuts, Ctrl+Shift+W reaches neither the menu nor `shortcuts()`
@@ -213,8 +230,12 @@ would act on the hidden main window.
 - **FOLLOW** `App.open` (`main.go`) to create the Settings window: `mygo.WindowOptions` with
   `Content: ui.View(...)`, and `OnClosed` clearing the field.
 - **REUSE** `attach`'s display-only terminal for the live preview: `terminal.New` with `nopConn{}`,
-  `termFont` and `lightTerm` / `darkTerm`, then `Feed` (`state.go`). Hold one terminal across frames, feed
-  it sample text, and call `SetFont` when the size changes. Do not paint monospace text with `ui.Painter`,
+  `termFont` and `lightTerm` / `darkTerm`, then `Feed` (`state.go`). `terminal.New` with a `Conn` starts a
+  reader goroutine at once (`plugins/terminal/terminal.go:214-217`, `:250-253`), `nopConn.Read` blocks
+  forever (`state.go:255`), and `Close` cannot end it (`closeSrc`, `:603-605`). So there is **one preview
+  terminal per `App`**, made the first time Settings opens and kept for the life of the app, outside
+  `App.reset()`: opening Settings again reuses it, so no goroutine leaks. Feed it sample text once, and
+  call `SetFont` when the size changes. Do not paint monospace text with `ui.Painter`,
   and do not keep a second copy of the terminal colours.
 - **REUSE** the `colors` struct and `colorsOf(c)` (`style.go`) for the window's colours. Any new colour is
   added to both `lightColors` and `darkColors`.
@@ -285,6 +306,10 @@ Checked by the architecture reviewer against the pinned mygo source and a probe 
   Windows it is the window whose menu bar was used. `menu.go:507-508`: `RoleClose` closes that window.
 - `app.go:319-323`: off darwin, `Application.SetMenu` gives every window the app menu bar.
 - `internal/darwin/app.go:305`: `OnActivate` fires from `applicationShouldHandleReopen`.
+- `content.go:145-181`: `Invalidate` and `Update` are the only callers of `contentChanged`, so a window
+  is redrawn only when one of them is called.
+- `menu.go:416-431`: `menuItemClicked` toggles a checkbox or radio item, runs its role, then calls
+  `Click`, and requests no frame. So a menu command redraws the main window only through `a.do`.
 - `main.go:125-130` (this repository): the main window's `OnClosed` handler ends with `a.client.Close()`
   and `a.win = nil`, so `a.win == nil` is exactly "the main window is closed", which the `OnActivate`
   change in §4 relies on.
@@ -469,8 +494,9 @@ profile-related palette entries; overrides, Reset and inheritance UI.
     handling, §2). With Settings frontmost, ⌘D, ⌘K and ⌘1–⌘9 (their Ctrl+Shift equivalents elsewhere) do
     not act on the hidden main window. ⌘T (Ctrl+Shift+T on Linux) never acts on a hidden main window
     either: New Tab is app-wide (§4), so it first opens the main window if it is closed or brings it to
-    the front, and only then opens the tab there. On Windows, Ctrl+Shift+T with Settings focused does
-    nothing (§2 "Windows").
+    the front, then opens the tab in it through `a.do`, so it is drawn at once. This holds on Windows
+    too, through Settings' own key handling (§2 "Windows"). Ctrl+= / Ctrl+- / Ctrl+0 with Settings focused
+    change the text size on every platform.
 11. GoRex ▸ Settings… works after the main window is closed, and clicking the Dock icon with only
     Settings open brings the main window back (the `OnActivate` change, §4 "App lifecycle"). Clicking the
     Dock icon with no window open still reopens the main window, clicking it with the main window open
