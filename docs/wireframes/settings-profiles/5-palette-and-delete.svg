@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="640" viewBox="0 0 1240 640">
+<rect x="0" y="0" width="1240" height="640" rx="0" fill="#fafafa"/>
+<text x="32" y="40" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" fill="#1d1d1f" font-weight="700" text-anchor="start">5 · Command palette and deleting a profile</text>
+<text x="32" y="64" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#636366" font-weight="400" text-anchor="start">The palette reaches everything the menus do; delete says which panes are affected.</text>
+<rect x="32" y="100" width="460" height="252" rx="10" fill="#ffffff" stroke="#c7c7cc" stroke-width="1"/>
+<text x="48" y="130" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" fill="#1d1d1f" font-weight="400" text-anchor="start">profile</text>
+<line x1="32" y1="144" x2="492" y2="144" stroke="#c7c7cc" stroke-width="1"/>
+<text x="52" y="170" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">Pane Profile: Default</text>
+<text x="52" y="196" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">Pane Profile: Presenting</text>
+<text x="476" y="196" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#8e8e93" font-weight="400" text-anchor="end">this pane</text>
+<rect x="40" y="205" width="444" height="24" rx="5" fill="#e4e4e8"/>
+<text x="52" y="222" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">Pane Profile: Late night</text>
+<text x="52" y="248" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">New Tab with Profile: Late night</text>
+<text x="52" y="274" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">New Profile…</text>
+<text x="52" y="300" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">Edit Profile “Presenting”…</text>
+<text x="52" y="326" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="400" text-anchor="start">Settings…</text>
+<text x="476" y="326" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#8e8e93" font-weight="400" text-anchor="end">⌘,</text>
+<line x1="516" y1="196" x2="494" y2="196" stroke="#c2410c" stroke-width="1.2" stroke-dasharray="3 3"/>
+<circle cx="494" cy="196" r="3" fill="#c2410c"/>
+<circle cx="516" cy="196" r="11" fill="#c2410c"/>
+<text x="516" y="200.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">1</text>
+<rect x="32" y="390" width="360" height="196" rx="12" fill="#ffffff" stroke="#c7c7cc" stroke-width="1"/>
+<text x="56" y="428" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" fill="#1d1d1f" font-weight="700" text-anchor="start">Delete “Presenting”?</text>
+<text x="56" y="454" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">2 panes use it. They switch to Default.</text>
+<text x="56" y="472" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">Its 1 override is lost. This cannot be undone.</text>
+<rect x="192" y="536" width="84" height="28" rx="6" fill="#ffffff" stroke="#c7c7cc" stroke-width="1"/>
+<text x="234.0" y="554.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f" font-weight="500" text-anchor="middle">Cancel</text>
+<rect x="286" y="536" width="84" height="28" rx="6" fill="#d70015"/>
+<text x="328.0" y="554.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#fff" font-weight="500" text-anchor="middle">Delete</text>
+<line x1="416" y1="460" x2="392" y2="460" stroke="#c2410c" stroke-width="1.2" stroke-dasharray="3 3"/>
+<circle cx="392" cy="460" r="3" fill="#c2410c"/>
+<circle cx="416" cy="460" r="11" fill="#c2410c"/>
+<text x="416" y="464.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">2</text>
+<text x="600" y="120" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" fill="#1d1d1f" font-weight="700" text-anchor="start">Notes</text>
+<circle cx="611" cy="142" r="11" fill="#c2410c"/>
+<text x="611" y="146.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">1</text>
+<text x="630" y="146" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d1d1f" font-weight="600" text-anchor="start">Palette entries</text>
+<text x="630" y="163" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">“Pane Profile: &lt;name&gt;” applies to the focused</text>
+<text x="630" y="180" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">pane (its current one marked). Plus New Tab</text>
+<text x="630" y="197" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">with Profile, New Profile…, Edit Profile…,</text>
+<text x="630" y="214" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">and Settings…</text>
+<circle cx="611" cy="241" r="11" fill="#c2410c"/>
+<text x="611" y="245.5" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">2</text>
+<text x="630" y="245" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d1d1f" font-weight="600" text-anchor="start">Delete always confirms</text>
+<text x="630" y="262" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">Auto-save means no Cancel later. It says how</text>
+<text x="630" y="279" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">many panes use the profile and that they</text>
+<text x="630" y="296" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#636366" font-weight="400" text-anchor="start">fall back to Default. Shown over Settings.</text>
+</svg>
