@@ -63,6 +63,7 @@ const (
 	readOnlyNewer      = "settings.json is newer than this version of GoRex"
 	readOnlyUnreadable = "settings.json could not be read"
 	readOnlyBackup     = "the settings backup could not be written"
+	readOnlyWrite      = "settings.json could not be written"
 )
 
 // errNewer is parseSettings' error for a file of a version after this one.
@@ -169,14 +170,17 @@ func loadSettings() {
 	applyAppearance()
 }
 
-// saveSettings writes the settings, unless the run is read-only.
+// saveSettings writes the settings, unless the run is read-only. A write
+// that fails makes the run read-only, so the Settings window never says a
+// change was saved when it was not.
 func saveSettings() {
 	if readOnly != "" {
 		return
 	}
 	b, _ := json.MarshalIndent(prefs, "", "  ")
-	os.MkdirAll(rex.Dir(), 0o700)
-	os.WriteFile(settingsPath(), b, 0o600)
+	if os.MkdirAll(rex.Dir(), 0o700) != nil || os.WriteFile(settingsPath(), b, 0o600) != nil {
+		readOnly = readOnlyWrite
+	}
 }
 
 // setThemeSource applies the app's appearance: mygo.Theme.SetSource, which
