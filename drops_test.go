@@ -294,14 +294,14 @@ func TestDropInRemoteServerSession(t *testing.T) {
 	here, _ := os.UserHomeDir()
 	me, _ := user.Current()
 	a.hello.Host = rex.HostInfo{Name: "here", User: me.Username, Home: here}
-	if _, remote := a.serverConn(); remote {
+	if _, remote, _ := a.serverConn(); remote {
 		t.Fatal("a server with this user and home is remote")
 	}
 
 	// Another host: copied to it as user@name, and its path pasted.
 	a.hello.Host = rex.HostInfo{Name: "far", User: "andre", Home: "/home/andre"}
-	conn, remote := a.serverConn()
-	if !remote || conn.dest != "andre@far" {
+	conn, remote, err := a.serverConn()
+	if !remote || err != nil || conn.dest != "andre@far" {
 		t.Fatalf("serverConn = %q %v", conn.dest, remote)
 	}
 	a.dropFiles(p, []string{src})
@@ -317,8 +317,37 @@ func TestDropInRemoteServerSession(t *testing.T) {
 		t.Errorf("ssh was not run for andre@far: %s", b)
 	}
 
-	// An ssh inside the session is a second hop: nothing is copied.
+	// What the server reports is checked before it reaches ssh.
 	before := p.term.Text()
+	for _, h := range []rex.HostInfo{
+		{Name: "far", User: "-oProxyCommand=x", Home: "/h"},
+		{Name: "-far", User: "andre", Home: "/h"},
+		{Name: "far host", User: "andre", Home: "/h"},
+		{Name: "far", User: "an;dre", Home: "/h"},
+	} {
+		a.hello.Host = h
+		if _, remote, err := a.serverConn(); !remote || err == nil {
+			t.Errorf("host %+v: remote %v, err %v", h, remote, err)
+		}
+		a.dropFiles(p, []string{src})
+		if !p.dropErr || !strings.Contains(p.dropNote, "not a name ssh can reach") || p.term.Text() != before {
+			t.Errorf("host %+v: note %q", h, p.dropNote)
+		}
+	}
+	a.hello.Host = rex.HostInfo{Name: "far", User: "andre", Home: "/home/andre"}
+
+	// An ssh that starts in the pane while the copy runs: nothing is pasted.
+	before = p.term.Text()
+	a.dropFiles(p, []string{src})
+	p.info.Program, p.info.Args, p.info.Idle = "ssh", []string{"ssh", "me@elsewhere"}, false
+	waitFor(t, tt, "the note", func() bool { a.runPosted(); return strings.Contains(p.dropNote, "An ssh started") })
+	if p.term.Text() != before {
+		t.Error("a path was pasted into the ssh that started")
+	}
+	p.info.Program, p.info.Args, p.info.Idle = "sh", nil, true
+
+	// An ssh inside the session is a second hop: nothing is copied.
+	before = p.term.Text()
 	p.info.Program, p.info.Args, p.info.Idle = "ssh", []string{"ssh", "me@elsewhere"}, false
 	a.dropFiles(p, []string{src})
 	if !p.dropErr || !strings.Contains(p.dropNote, "second hop") || p.term.Text() != before {

@@ -396,8 +396,11 @@ func (a *App) dropFilesFrom(p *Pane, files []string, temp bool) {
 		return
 	}
 	conn, viaSSH := isSSH(p.info.Program, p.info.Args)
-	server, serverRemote := a.serverConn()
+	server, serverRemote, serverErr := a.serverConn()
 	switch {
+	case serverErr != nil:
+		p.setDropNote(a, "Not copied: "+serverErr.Error(), true, dropMessageTime)
+		return
 	case serverRemote && viaSSH:
 		// The agent is on the host the ssh reaches, which is not the
 		// session's host, where the copy would go: a second hop.
@@ -449,12 +452,21 @@ func (a *App) dropFilesFrom(p *Pane, files []string, temp bool) {
 // socket is forwarded here: the agents of its panes read the files on that
 // host. It is the user and the name the server reports, resolved by this
 // machine's ssh config.
-func (a *App) serverConn() (sshConn, bool) {
+func (a *App) serverConn() (conn sshConn, remote bool, err error) {
 	h := a.hello.Host
 	if h.Name == "" || h.User == "" || serverIsLocal(h) {
-		return sshConn{}, false
+		return sshConn{}, false, nil
 	}
-	return sshConn{dest: h.User + "@" + h.Name}, true
+	// The server says these, not the user: nothing that ssh could read as an
+	// option or as more than a name.
+	for _, s := range []string{h.User, h.Name} {
+		if s[0] == '-' || strings.IndexFunc(s, func(r rune) bool {
+			return !(r == '.' || r == '_' || r == '-' || unicode.IsLetter(r) || unicode.IsDigit(r))
+		}) >= 0 {
+			return sshConn{}, true, fmt.Errorf("the server's host %q is not a name ssh can reach", h.User+"@"+h.Name)
+		}
+	}
+	return sshConn{dest: h.User + "@" + h.Name}, true, nil
 }
 
 // serverIsLocal tells that a server's host is this computer: the same user
