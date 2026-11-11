@@ -506,6 +506,20 @@ func TestDropErrorBanner(t *testing.T) {
 	if tt.HasText("Copying…") {
 		t.Error("the old note is still shown")
 	}
+	// Painted, not hidden under the terminal: some pixel of the text's box
+	// has the colour the text is drawn in.
+	img, found := tt.Image(), false
+	for y := int(r.Y); y < int(r.Y+r.H) && !found; y++ {
+		for x := int(r.X); x < int(r.X+r.W); x++ {
+			if cr, cg, cb, _ := img.At(x, y).RGBA(); cr>>8 > 0xe0 && cg>>8 > 0x90 && cg>>8 < 0xc8 && cb>>8 < 0x30 || cr>>8 > 0xf0 && cg>>8 > 0xb0 && cb>>8 < 0x40 {
+				found = true
+				break
+			}
+		}
+	}
+	if !found {
+		t.Error("the refusal's text is not painted over the terminal")
+	}
 	if c, rw := p.term.Size(); c != cols || rw != rows {
 		t.Errorf("the banner resized the terminal: %dx%d, was %dx%d", c, rw, cols, rows)
 	}
