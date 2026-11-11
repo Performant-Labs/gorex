@@ -62,6 +62,45 @@ func TestParseSSH(t *testing.T) {
 	}
 }
 
+func TestParseMosh(t *testing.T) {
+	for _, tc := range []struct {
+		first string
+		dest  string
+		opts  []string
+		ok    bool
+	}{
+		{"-# andre-angelantoni@jupiter -- tmux new ; set -sg escape-time 10 |", "andre-angelantoni@jupiter", nil, true},
+		{"-# jupiter |", "jupiter", nil, true},
+		{"-# -p 60001 -4 me@host |", "me@host", nil, true}, // mosh's own -p and -4
+		{"-# --predict=never me@host -- top |", "me@host", nil, true},
+		{"-# --ssh=ssh -p 2222 -i /k/id me@host |", "me@host", []string{"-p", "2222", "-i", "/k/id"}, true},
+		// Getopt::Long also takes a long option's value as the next word.
+		{"-# --port 60001 --family inet me@host |", "me@host", nil, true},
+		{"-# --ssh ssh -p 2222 me@host |", "me@host", []string{"-p", "2222"}, true},
+		{"-# --ssh sshpass me@host |", "", nil, false},
+		{"-# --port |", "", nil, false},
+		// The end of --ssh's command is a guess: mosh's own -p after it is taken as ssh's.
+		{"-# --ssh=ssh -i k -p 60001 me@host |", "me@host", []string{"-i", "k", "-p", "60001"}, true},
+		{"-# --ssh=sshpass me@host |", "", nil, false},
+		// mosh [options] [--] host: a -- before the host.
+		{"-# -- me@host |", "me@host", nil, true},
+		{"-# -4 -- me@host top |", "me@host", nil, true},
+		// A multi-word --server loses its quotes: with a -- after the host,
+		// the host is the last word before it.
+		{"-# --server=LANG=en_US.UTF-8 mosh-server me@host -- top |", "me@host", nil, true},
+		{"-# -- |", "", nil, false},
+		{"10.0.0.2", "", nil, false},
+	} {
+		got, ok := isSSH("mosh-client", []string{"mosh-client", tc.first, "10.0.0.2", "60001"})
+		if ok != tc.ok || got.dest != tc.dest || !slices.Equal(got.opts, tc.opts) {
+			t.Errorf("mosh-client %q = %q %q %v; want %q %q %v", tc.first, got.dest, got.opts, ok, tc.dest, tc.opts, tc.ok)
+		}
+	}
+	if _, ok := isSSH("mosh-client", []string{"mosh-client"}); ok {
+		t.Error("mosh-client without arguments is mosh")
+	}
+}
+
 func TestDropName(t *testing.T) {
 	now := time.Date(2026, 11, 11, 10, 30, 45, 0, time.UTC)
 	for in, want := range map[string]string{

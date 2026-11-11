@@ -123,10 +123,100 @@ func keepOption(f byte, v string) bool {
 // reaches its host.
 func isSSH(program string, args []string) (sshConn, bool) {
 	name := strings.TrimSuffix(strings.ToLower(filepath.Base(program)), ".exe")
-	if name != "ssh" || len(args) == 0 {
+	if len(args) == 0 {
 		return sshConn{}, false
 	}
-	return parseSSH(args)
+	switch name {
+	case "ssh":
+		return parseSSH(args)
+	case "mosh-client":
+		return parseMosh(args)
+	}
+	return sshConn{}, false
+}
+
+// parseMosh reads the arguments of a mosh-client. mosh logs in over ssh, then
+// replaces itself with mosh-client <"-# the arguments it was given |"> <ip> <port>,
+// so the host and the ssh options are in that first argument, joined by
+// spaces (its quotes are gone, and the program's own name is not there). The ip is not used: the user is not in it.
+func parseMosh(args []string) (sshConn, bool) {
+	if len(args) < 2 || !strings.HasPrefix(args[1], "-# ") || !strings.HasSuffix(args[1], " |") {
+		return sshConn{}, false
+	}
+	t := strings.Fields(strings.TrimSuffix(strings.TrimPrefix(args[1], "-# "), " |"))
+	if len(t) == 0 {
+		return sshConn{}, false
+	}
+	// What the ssh of the login gets, from --ssh="ssh -p 2222 -i key": its
+	// tokens follow the option's first word. Quotes are gone, so the end of
+	// that command is a guess: the ssh options that follow it are taken as its,
+	// so with `--ssh="ssh -i key" -p 60001 host` mosh's own -p is read as ssh's
+	// and the copy goes to that port and fails, with the reason in the header.
+	ssh := []string{"ssh"}
+	// Mosh's long options that take a value, which Getopt::Long also takes as
+	// the next word, and its short ones.
+	longValue := map[string]bool{"ssh": true, "port": true, "family": true, "server": true, "client": true,
+		"predict": true, "bind-server": true, "experimental-remote-ip": true}
+	const shortValue = "p"
+	// The host is the first word that is not an option, and, where a `--`
+	// follows, the last before it: a --server or --client command of several
+	// words, whose quotes are gone, leaves its extra words in front of the
+	// host. Without a `--`, the extra words cannot be told from the host, so
+	// the copy goes to the wrong host and fails.
+	var first, last, afterDash string
+	dashed := false
+	for i := 0; i < len(t) && !dashed; i++ {
+		a := t[i]
+		switch {
+		case a == "--":
+			dashed = true
+			if i+1 < len(t) {
+				afterDash = t[i+1]
+			}
+		case strings.HasPrefix(a, "--"):
+			name, val, attached := strings.Cut(a[2:], "=")
+			if !attached && longValue[name] {
+				if i++; i >= len(t) {
+					return sshConn{}, false
+				}
+				val = t[i]
+			}
+			if name != "ssh" {
+				continue
+			}
+			if filepath.Base(val) != "ssh" {
+				return sshConn{}, false // another program than ssh
+			}
+			for i+1 < len(t) && strings.HasPrefix(t[i+1], "-") && !strings.HasPrefix(t[i+1], "--") {
+				i++
+				ssh = append(ssh, t[i])
+				if f := t[i]; len(f) == 2 && strings.ContainsRune("BbcDEeFIiJLlmOoPpQRSWw", rune(f[1])) && i+1 < len(t) {
+					i++
+					ssh = append(ssh, t[i])
+				}
+			}
+		case len(a) == 2 && a[0] == '-' && strings.Contains(shortValue, a[1:]):
+			i++ // its value
+		case len(a) > 1 && a[0] == '-':
+			// -4, -6, -a, -n and the like
+		default:
+			if first == "" {
+				first = a
+			}
+			last = a
+		}
+	}
+	dest := first
+	switch {
+	case dashed && last != "":
+		dest = last
+	case dashed:
+		dest = afterDash // mosh [options] -- host
+	}
+	if dest == "" {
+		return sshConn{}, false
+	}
+	return parseSSH(append(ssh, dest))
 }
 
 // dropName makes the name of the copy of a file: the time, for the days it
