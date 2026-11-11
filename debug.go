@@ -112,7 +112,7 @@ func (a *App) debug(dir, line string) {
 		// text, or its image where there is no text.
 		win.Update(func() {
 			if t := a.tab(); t != nil && t.Focus != nil {
-				a.pasteClipboard(t.Focus, a.services.ReadClipboard())
+				a.pasteClipboard(t.Focus, a.getServices().ReadClipboard())
 			}
 		})
 	case "size":

@@ -88,7 +88,7 @@ func (a *App) menuPaste(win *mygo.Window) {
 	if win == nil || win != a.win {
 		return
 	}
-	a.pasteAfterRole(a.services.ReadClipboard())
+	a.pasteAfterRole(a.getServices().ReadClipboard())
 }
 
 // pasteAfterRole is menuPaste once the window is known to be the main one.

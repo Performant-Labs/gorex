@@ -18,7 +18,7 @@ const (
 )
 
 func (a *App) view(c *ui.Context) {
-	a.services = c.Services()
+	a.setServices(c.Services())
 	a.runPosted()
 	k := colorsOf(c)
 	a.focusedWin = a.win == nil || a.win.IsFocused()
