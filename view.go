@@ -18,7 +18,7 @@ const (
 )
 
 func (a *App) view(c *ui.Context) {
-	a.services = c.Services()
+	a.setServices(c.Services())
 	a.runPosted()
 	k := colorsOf(c)
 	a.focusedWin = a.win == nil || a.win.IsFocused()
@@ -228,6 +228,22 @@ func (a *App) paneCard(c *ui.Context, k *colors, t *Tab, p *Pane) ui.Element {
 	if focused {
 		bg, border, shadow = k.cardFocused, k.cardBorderFocused, k.shadowFocused
 	}
+	// Files dropped on the card are pasted into the pane, as paths, or
+	// copied to its ssh host first.
+	if card.FileDragOver() {
+		border = k.attention
+	}
+	if files := card.DroppedFiles(); len(files) > 0 {
+		t.setFocus(p)
+		a.focusReq = p
+		a.dropFiles(p, files)
+	}
+	// Paste, while a terminal of the pane has the focus: the clipboard's
+	// text, or its image where there is no text. The terminal's own paste
+	// takes text only.
+	if mods, key, ok := pasteKey(); ok && card.Shortcut(mods, key) {
+		a.pasteClipboard(p, c.ReadClipboard())
+	}
 	card.Background(bg).Border(1, border).
 		Shadow(0, 1, 2, 0, shadow).
 		Shadow(0, 6, 22, -2, shadow)
@@ -287,6 +303,13 @@ func (a *App) paneHeader(c *ui.Context, k *colors, t *Tab, p *Pane, focused, hov
 				ui.Text(c, detail).FontSize(12.5).FontWeight(500).TextColor(k.text.Alpha(0.86)).SingleLine().Ellipsis("…").Shrink(1).MinWidth(0)
 			}
 			a.activityBadge(c, k, p)
+			if p.dropNote != "" {
+				col := k.textMuted
+				if p.dropErr {
+					col = k.attention
+				}
+				ui.Text(c, p.dropNote).FontSize(12).TextColor(col).SingleLine().Ellipsis("…").Shrink(1).MinWidth(0).Tooltip(p.dropNote)
+			}
 		})
 		show := focused || hovered
 		ui.Row(c).Gap(1).AlignItems(ui.Center).Opacity(map[bool]float32{true: 1, false: 0}[show]).Children(func() {

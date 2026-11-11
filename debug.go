@@ -6,11 +6,16 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/egoist/mygo"
 )
 
 // debugHook lets a script drive the app while GOREX_DEBUG names a
 // directory: each line of its file "do" is run, and "shot" captures the
-// window into shot.png.
+// window into shot.png. Besides the commands' titles, the verbs are: type,
+// tab, focus, name, close, zoom, size, sleep, shot; drop <path>… (files
+// dropped on the focused pane, as the window does it); clip-image <png> (an
+// image on the clipboard); and paste (what the paste shortcut does).
 func (a *App) debugHook() {
 	dir := os.Getenv("GOREX_DEBUG")
 	if dir == "" {
@@ -30,6 +35,36 @@ func (a *App) debugHook() {
 			}
 		}
 	}()
+}
+
+// debugDrop drops the files of arg, separated by spaces that no backslash
+// escapes, on the focused pane.
+func (a *App) debugDrop(arg string) {
+	t := a.tab()
+	if t == nil || t.Focus == nil {
+		return
+	}
+	var files []string
+	var cur strings.Builder
+	flush := func() {
+		if cur.Len() > 0 {
+			files = append(files, cur.String())
+			cur.Reset()
+		}
+	}
+	for i := 0; i < len(arg); i++ {
+		switch {
+		case arg[i] == '\\' && i+1 < len(arg) && arg[i+1] == ' ':
+			cur.WriteByte(' ')
+			i++
+		case arg[i] == ' ':
+			flush()
+		default:
+			cur.WriteByte(arg[i])
+		}
+	}
+	flush()
+	a.dropFiles(t.Focus, files)
 }
 
 func (a *App) debug(dir, line string) {
@@ -57,6 +92,28 @@ func (a *App) debug(dir, line string) {
 		win.Update(func() {
 			if t := a.tab(); t != nil && t.Focus != nil && t.Focus.term != nil {
 				t.Focus.term.Send([]byte(arg))
+			}
+		})
+	case "drop":
+		// drop <path>…: files dropped on the focused pane, as the window
+		// does it. Spaces in a path are written \ .
+		win.Update(func() { a.debugDrop(arg) })
+	case "clip-image":
+		// clip-image <png>: puts an image on the clipboard, for paste.
+		if png, err := os.ReadFile(arg); err == nil {
+			if err := mygo.Clipboard.WriteImage(png); err != nil {
+				log.Printf("clip-image: %v", err)
+			}
+		} else {
+			log.Printf("clip-image: %v", err)
+		}
+	case "paste":
+		// paste: what the pane's paste shortcut does (Control+Shift+V; on
+		// macOS Command+V belongs to the Edit menu): the clipboard's text,
+		// or its image where there is no text.
+		win.Update(func() {
+			if t := a.tab(); t != nil && t.Focus != nil {
+				a.pasteClipboard(t.Focus, a.getServices().ReadClipboard())
 			}
 		})
 	case "size":

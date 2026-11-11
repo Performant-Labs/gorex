@@ -70,6 +70,12 @@ type Pane struct {
 	// saved layout whose session was gone.
 	restored bool
 	startDir string
+	// dropNote is what the last file drop is doing or did, shown in the
+	// header, in red when dropErr; dropSeq tells the note a timer clears
+	// from a newer one.
+	dropNote string
+	dropErr  bool
+	dropSeq  int
 }
 
 // App is the state of GoRex's window.
@@ -106,8 +112,11 @@ type App struct {
 	// view without a window, as in tests.
 	postMu sync.Mutex
 	posted []func()
-	// services keeps redraw requests available to menu callbacks.
-	services ui.Services
+	// services keeps redraw requests available to menu callbacks and to
+	// goroutines. view writes it every frame, so reads go through
+	// getServices.
+	servicesMu sync.Mutex
+	services   ui.Services
 
 	// The Settings window, which outlives the main window: reset leaves
 	// it. settingsPage is the page it shows, "" for General, and preview
@@ -881,4 +890,19 @@ func (a *App) apply(byID map[string]rex.SessionInfo) {
 }
 
 // laterService queues a menu action without keeping a build context.
-func (a *App) laterService(fn func()) { a.post(fn); a.services.Invalidate() }
+func (a *App) laterService(fn func()) {
+	a.post(fn)
+	a.getServices().Invalidate()
+}
+
+func (a *App) setServices(s ui.Services) {
+	a.servicesMu.Lock()
+	a.services = s
+	a.servicesMu.Unlock()
+}
+
+func (a *App) getServices() ui.Services {
+	a.servicesMu.Lock()
+	defer a.servicesMu.Unlock()
+	return a.services
+}

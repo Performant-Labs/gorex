@@ -30,7 +30,10 @@ jobs:
       # The race detector needs cgo, which GoRex does not use; on Windows the
       # tests run without it. Windows is the one platform where no test is
       # meant to skip (the Settings keys test runs only there), so a skip
-      # there fails the job instead of passing unseen.
+      # there fails the job instead of passing unseen. The exceptions are
+      # named below: tests that drive a fake ssh written as a shell script,
+      # or the debug hook's Unix-style escapes, or a real remote (GOREX_TEST_SSH, which CI
+      # does not set). A new skip, or a skip of any other test, still fails.
       - name: Test with the race detector
         if: runner.os != 'Windows'
         run: go test -count=1 -race ./...
@@ -42,6 +45,7 @@ jobs:
           $code = $LASTEXITCODE
           Write-Output $out
           if ($code -ne 0) { exit $code }
-          $skips = [regex]::Matches($out, '--- SKIP: \S+') | ForEach-Object { $_.Value }
+          $allowed = 'TestUploadToRemote','TestDropIntoRemoteClaude','TestDropIntoRemoteOpencode','TestPasteImageIntoRemoteAgents','TestUpload','TestUploadRemovesOldCopies','TestUploadErrors','TestPasteImageInSSHPane','TestDebugDrop'
+          $skips = [regex]::Matches($out, '--- SKIP: (\S+)') | Where-Object { $allowed -notcontains $_.Groups[1].Value } | ForEach-Object { $_.Value }
           if ($skips) { Write-Error "Tests skipped on Windows: $($skips -join ', ')"; exit 1 }
           if ($out -notmatch '--- PASS: TestSettingsKeysOnWindows') { Write-Error 'TestSettingsKeysOnWindows did not run'; exit 1 }

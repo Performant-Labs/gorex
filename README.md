@@ -29,6 +29,16 @@ terminal plugin (Ghostty's libghostty-vt). No webview, no cgo: one ~15 MB app.
 - **Tab icons** stack the tiles of a tab's programs, the focused pane's in
   front, as Rex does. Tabs reorder by dragging, rename by double-click, and
   have a context menu.
+- **Images for Claude Code and opencode.** Drop a file on a pane, or paste a
+  screenshot (⇧⌘V, Edit ▸ Paste Image; Ctrl+Shift+V elsewhere), and GoRex pastes
+  the file's path as one bracketed paste, which both agents turn into an
+  attachment (`[Image #1]` in Claude Code, `[Image 1]` in opencode). Text on
+  the clipboard still pastes as text, and so do files copied in the Finder.
+  When the pane runs `ssh`, the path of this computer means nothing over
+  there, and neither agent can read this computer's clipboard from the other
+  end, so GoRex first copies the file to `~/.gorex/drops` on that host and
+  pastes the path of the copy. Progress and failures show in the pane's
+  header. See [Images over ssh](#images-over-ssh) for how, and for the limits.
 - **Host chip** with the machine's name and model; its popover shows the
   chip, memory, OS and the session server.
 - **Command palette** (⇧⌘P, Ctrl+Shift+P, or the ⌘ button): every command, and every pane
@@ -51,6 +61,8 @@ terminal plugin (Ghostty's libghostty-vt). No webview, no cgo: one ~15 MB app.
 | ⇧⌘R | Ctrl+Shift+R | Rename tab |
 | ⇧⌘P, ⌘P | Ctrl+Shift+P | Command palette |
 | ⌘K | Ctrl+Shift+K | Clear |
+| ⌘V | Ctrl+Shift+V | Paste text (elsewhere than on macOS, an image too where the clipboard has no text) |
+| ⇧⌘V | Edit menu, palette | Paste Image: the clipboard's image, as a dropped file |
 | ⌘+ ⌘− ⌘0 | Ctrl+= Ctrl+- Ctrl+0 | Text size |
 | ⌘, | Ctrl+, | Settings |
 | ⌥⌘Q | | Quit and end all sessions |
@@ -62,6 +74,54 @@ which type characters (AltGr) on many keyboards. Ctrl+= Ctrl+- Ctrl+0 for
 the text size and Ctrl+, for Settings go without Shift, as in other apps:
 in the terminal's legacy encoding Ctrl+, sends nothing, so the terminal
 loses nothing to it.
+
+## Images over ssh
+
+How a drop or a pasted screenshot reaches an agent:
+
+- **Local pane:** the file's absolute path, with shell characters escaped, in
+  one bracketed paste. A pasted screenshot is first written to
+  `GoRex/pastes` in the user cache directory (`~/Library/Caches` on macOS,
+  `~/.cache` on Linux, `%LocalAppData%` on Windows; mode 600; removed after
+  a day).
+- **Pane running `ssh`:** the file is copied over a second connection that
+  repeats the pane's `-p -i -J -F -o` options (not its forwards, remote
+  command or control-master options) to `~/.gorex/drops` on the host, mode 600,
+  and the absolute path of the copy is pasted. It needs key or agent
+  authentication, or a control master the pane's config already opens; a
+  password prompt is not possible. Copies older than a day are removed from
+  that directory on the next copy: the agents keep their own copy of a pasted
+  image, so the file is needed only until the paste lands.
+- **Several files** are pasted in one paste, separated by spaces.
+- **Nothing is pasted on a failure** (no key access, host down, ssh ended
+  during the copy): the pane's header says why.
+
+Limits of the agents themselves (from their docs and source, and tested on
+Claude Code 2.1.322 and opencode 2.2.5 and 2.0.29):
+
+- Both need a bracketed paste: a path typed as keystrokes stays text. A pane
+  whose program has not turned bracketed paste on, such as a plain shell,
+  gets the text.
+- Claude Code takes JPEG, PNG, GIF and WebP; opencode adds PDF. Both resize
+  large images. opencode refuses an attachment over 20 MB at the paste, and
+  GoRex refuses larger files with a message, so as not to copy one that
+  would not attach.
+- opencode attaches the image whatever its model, but a text-only model then
+  says it cannot see it.
+
+Not handled: a second hop (ssh run inside the ssh), `mosh`, `docker exec`
+and password-only hosts (the file goes to the first ssh host, or the copy
+fails); folders; images dragged out of a browser (a drop gives GoRex file
+paths only); and pasting a screenshot from the terminal's right-click menu
+or with ⌘V on macOS, where the Edit menu keeps ⌘V for text (use ⇧⌘V or
+Edit ▸ Paste Image).
+
+Dropping the same file on other terminals, read from their source and not
+tried with a real drag: iTerm2, Ghostty, WezTerm and Alacritty paste the local
+path, which attaches an image in both agents when they run on the same
+computer; kitty does so for one file only; Terminal.app and the paths of
+Windows Terminal are not known. None copies the file, so over ssh the path
+points at the Mac. The notes are in `docs/research/`.
 
 ## Develop and build
 
