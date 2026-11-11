@@ -69,15 +69,13 @@ func TestParseMosh(t *testing.T) {
 		opts  []string
 		ok    bool
 	}{
-		{"-# mosh andre-angelantoni@jupiter -- tmux new ; set -sg escape-time 10 |", "andre-angelantoni@jupiter", nil, true},
-		{"-# mosh jupiter |", "jupiter", nil, true},
-		{"-# mosh -p 60001 -4 me@host |", "me@host", nil, true}, // mosh's own -p and -4
-		{"-# mosh --predict=never me@host -- top |", "me@host", nil, true},
-		{"-# mosh --ssh=ssh -p 2222 -i /k/id me@host |", "me@host", []string{"-p", "2222", "-i", "/k/id"}, true},
-		{"-# /opt/homebrew/bin/mosh me@host |", "me@host", nil, true},
-		{"-# mosh --ssh=sshpass me@host |", "", nil, false},
-		{"-# mosh -- ls |", "", nil, false},
-		{"-# vim x |", "", nil, false},
+		{"-# andre-angelantoni@jupiter -- tmux new ; set -sg escape-time 10 |", "andre-angelantoni@jupiter", nil, true},
+		{"-# jupiter |", "jupiter", nil, true},
+		{"-# -p 60001 -4 me@host |", "me@host", nil, true}, // mosh's own -p and -4
+		{"-# --predict=never me@host -- top |", "me@host", nil, true},
+		{"-# --ssh=ssh -p 2222 -i /k/id me@host |", "me@host", []string{"-p", "2222", "-i", "/k/id"}, true},
+		{"-# --ssh=sshpass me@host |", "", nil, false},
+		{"-# -- ls |", "", nil, false},
 		{"10.0.0.2", "", nil, false},
 	} {
 		got, ok := isSSH("mosh-client", []string{"mosh-client", tc.first, "10.0.0.2", "60001"})

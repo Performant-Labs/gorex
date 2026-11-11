@@ -136,18 +136,17 @@ func isSSH(program string, args []string) (sshConn, bool) {
 }
 
 // parseMosh reads the arguments of a mosh-client. mosh logs in over ssh, then
-// replaces itself with mosh-client <"-# the typed command |"> <ip> <port>, so
-// the host and the ssh options are in that first argument, joined by spaces
-// (its quotes are gone). The ip is not used: the user is not in it.
+// replaces itself with mosh-client <"-# the arguments it was given |"> <ip> <port>,
+// so the host and the ssh options are in that first argument, joined by
+// spaces (its quotes are gone, and the program's own name is not there). The ip is not used: the user is not in it.
 func parseMosh(args []string) (sshConn, bool) {
 	if len(args) < 2 || !strings.HasPrefix(args[1], "-# ") || !strings.HasSuffix(args[1], " |") {
 		return sshConn{}, false
 	}
 	t := strings.Fields(strings.TrimSuffix(strings.TrimPrefix(args[1], "-# "), " |"))
-	if len(t) == 0 || filepath.Base(t[0]) != "mosh" {
+	if len(t) == 0 {
 		return sshConn{}, false
 	}
-	t = t[1:]
 	// What the ssh of the login gets, from --ssh="ssh -p 2222 -i key": its
 	// tokens follow the option's first word.
 	ssh := []string{"ssh"}
