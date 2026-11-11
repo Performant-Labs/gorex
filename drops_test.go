@@ -318,6 +318,17 @@ func TestDropInRemoteServerSession(t *testing.T) {
 	os.WriteFile(src, []byte("png"), 0o644)
 
 	// The server is this computer: the local path.
+	// What the test app's real local server reported is local: a mismatch
+	// between that and what the client compares would route every local drop
+	// through ssh.
+	hello, err := a.client.Hello()
+	if err != nil || hello.Host.User == "" || hello.Host.Home == "" {
+		t.Fatalf("hello %+v: %v", hello.Host, err)
+	}
+	a.hello = hello
+	if _, remote, _ := a.serverConn(); remote {
+		t.Fatalf("the local server's own report %+v is remote", a.hello.Host)
+	}
 	me, _ := user.Current()
 	a.hello.Host = rex.HostInfo{Name: "here", User: me.Username[strings.LastIndexByte(me.Username, '\\')+1:], Home: me.HomeDir}
 	// HOME in the environment is not what the server reports: the system's
