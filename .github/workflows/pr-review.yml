@@ -23,9 +23,11 @@ permissions:
 
 jobs:
   review:
-    # The org's own runners (CI_RUNNER, label self-hosted-linux), ubuntu-latest when unset. Safe
-    # for a public repository because of the `if` below: only this repository's own branches, or
-    # a collaborator's `/review`, reach it, and it checks out and runs no pull request code.
+    # The org's own runners (CI_RUNNER, label self-hosted-linux), ubuntu-latest when unset. This
+    # repository is public: the `if` below and the refusal step keep a fork's pull request out of
+    # the review, and fork workflow runs need a maintainer's approval (see test.yml), but the
+    # approval setting is the boundary, not these checks.
+    timeout-minutes: 30
     runs-on: ${{ vars.CI_RUNNER || 'ubuntu-latest' }}
     if: >-
       (github.event_name == 'pull_request' &&
@@ -67,8 +69,7 @@ jobs:
       # repository's own people may spend it: a comment from OWNER/MEMBER/COLLABORATOR,
       # on a pull request whose head is a branch of THIS repository (never a fork). The
       # job's `if` already says so; this re-checks the PR itself for the comment path.
-      - name: Refuse untrusted triggers before the token is used
-        if: steps.cfg.outputs.backend == 'claude-cli'
+      - name: Refuse untrusted triggers before any model is called
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           EVENT_NAME: ${{ github.event_name }}
