@@ -166,6 +166,12 @@ func TestSavePasteRemovesOldImages(t *testing.T) {
 // before its terminal does, and pastes the image where the terminal alone
 // would paste nothing.
 func TestPasteKey(t *testing.T) {
+	if runtime.GOOS == "darwin" {
+		if _, _, ok := pasteKey(); ok {
+			t.Error("macOS has a pane shortcut for paste; Command+V is the Edit menu's")
+		}
+		return
+	}
 	dir := withClipboardImage(t, testPNG(t))
 	a, tt := newTestApp(t)
 	p := a.tab().Focus
@@ -173,7 +179,10 @@ func TestPasteKey(t *testing.T) {
 	for i := 0; i < 3; i++ {
 		tt.Frame()
 	}
-	mods, key := pasteKey()
+	mods, key, ok := pasteKey()
+	if !ok {
+		t.Fatal("no paste shortcut")
+	}
 
 	tt.SetClipboard("")
 	tt.Key(mods, key)

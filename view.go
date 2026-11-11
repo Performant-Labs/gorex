@@ -241,7 +241,7 @@ func (a *App) paneCard(c *ui.Context, k *colors, t *Tab, p *Pane) ui.Element {
 	// Paste, while a terminal of the pane has the focus: the clipboard's
 	// text, or its image where there is no text. The terminal's own paste
 	// takes text only.
-	if mods, key := pasteKey(); card.Shortcut(mods, key) {
+	if mods, key, ok := pasteKey(); ok && card.Shortcut(mods, key) {
 		a.pasteClipboard(p, c.ReadClipboard())
 	}
 	card.Background(bg).Border(1, border).

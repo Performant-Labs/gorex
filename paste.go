@@ -44,13 +44,15 @@ var (
 // pane's agent reads it by its path, so it must outlive the paste.
 const pasteKeepTime = remoteDropHours * time.Hour
 
-// pasteKey is the shortcut of paste: Command+V on macOS, and elsewhere
-// Control+Shift+V, as the terminal's own.
-func pasteKey() (ui.Modifiers, ui.Key) {
+// pasteKey is the pane's paste shortcut, Control+Shift+V as the terminal's own,
+// and none on macOS, where Command+V is the Edit menu's and never reaches the
+// pane: a shortcut there would be dead, and would paste twice if it ever ran
+// alongside the role.
+func pasteKey() (mods ui.Modifiers, key ui.Key, ok bool) {
 	if runtime.GOOS == "darwin" {
-		return ui.Super, ui.KeyV
+		return 0, 0, false
 	}
-	return ui.Ctrl | ui.Shift, ui.KeyV
+	return ui.Ctrl | ui.Shift, ui.KeyV, true
 }
 
 // pasteClipboard pastes into the pane what the clipboard holds: its text, or,
