@@ -62,6 +62,34 @@ func TestParseSSH(t *testing.T) {
 	}
 }
 
+func TestParseMosh(t *testing.T) {
+	for _, tc := range []struct {
+		first string
+		dest  string
+		opts  []string
+		ok    bool
+	}{
+		{"-# mosh andre-angelantoni@jupiter -- tmux new ; set -sg escape-time 10 |", "andre-angelantoni@jupiter", nil, true},
+		{"-# mosh jupiter |", "jupiter", nil, true},
+		{"-# mosh -p 60001 -4 me@host |", "me@host", nil, true}, // mosh's own -p and -4
+		{"-# mosh --predict=never me@host -- top |", "me@host", nil, true},
+		{"-# mosh --ssh=ssh -p 2222 -i /k/id me@host |", "me@host", []string{"-p", "2222", "-i", "/k/id"}, true},
+		{"-# /opt/homebrew/bin/mosh me@host |", "me@host", nil, true},
+		{"-# mosh --ssh=sshpass me@host |", "", nil, false},
+		{"-# mosh -- ls |", "", nil, false},
+		{"-# vim x |", "", nil, false},
+		{"10.0.0.2", "", nil, false},
+	} {
+		got, ok := isSSH("mosh-client", []string{"mosh-client", tc.first, "10.0.0.2", "60001"})
+		if ok != tc.ok || got.dest != tc.dest || !slices.Equal(got.opts, tc.opts) {
+			t.Errorf("mosh-client %q = %q %q %v; want %q %q %v", tc.first, got.dest, got.opts, ok, tc.dest, tc.opts, tc.ok)
+		}
+	}
+	if _, ok := isSSH("mosh-client", []string{"mosh-client"}); ok {
+		t.Error("mosh-client without arguments is mosh")
+	}
+}
+
 func TestDropName(t *testing.T) {
 	now := time.Date(2026, 11, 11, 10, 30, 45, 0, time.UTC)
 	for in, want := range map[string]string{

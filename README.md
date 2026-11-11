@@ -84,6 +84,10 @@ How a drop or a pasted screenshot reaches an agent:
   `GoRex/pastes` in the user cache directory (`~/Library/Caches` on macOS,
   `~/.cache` on Linux, `%LocalAppData%` on Windows; mode 600; removed after
   a day).
+- **Pane running `mosh`:** the same as `ssh`. mosh replaces itself with
+  `mosh-client`, whose first argument still holds the typed command, so GoRex
+  reads the host and a `--ssh=…` command from it and copies over ssh. A
+  `mosh-client` started by hand, with just an address, is not recognised.
 - **Pane running `ssh`:** the file is copied over a second connection that
   repeats the pane's `-p -i -J -F -o` options (not its forwards, remote
   command or control-master options) to `~/.gorex/drops` on the host, mode 600,
@@ -109,7 +113,7 @@ Claude Code 2.1.322 and opencode 2.2.5 and 2.0.29):
 - opencode attaches the image whatever its model, but a text-only model then
   says it cannot see it.
 
-Not handled: a second hop (ssh run inside the ssh), `mosh`, `docker exec`
+Not handled: a second hop (ssh run inside the ssh), `docker exec`
 and password-only hosts (the file goes to the first ssh host, or the copy
 fails); folders; images dragged out of a browser (a drop gives GoRex file
 paths only); and pasting a screenshot from the terminal's right-click menu
