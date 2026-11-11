@@ -48,6 +48,9 @@ func newTestApp(t *testing.T) (*App, *ui.Tester) {
 	dir := testDir(t)
 	t.Setenv("GOREX_DIR", dir)
 	t.Setenv("SHELL", testShell.path)
+	// The prompt the tests wait for, whoever runs them: a root shell's own
+	// is "#", not "$" (a CI runner in a container is root).
+	t.Setenv("PS1", testShell.prompt+" ")
 	go rex.Serve()
 	var client *rex.Client
 	for i := 0; i < 100; i++ {
