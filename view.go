@@ -253,6 +253,16 @@ func (a *App) paneCard(c *ui.Context, k *colors, t *Tab, p *Pane) ui.Element {
 		a.paneHeader(c, k, t, p, focused, hovered)
 		body := ui.Box(c).Grow(1).MinHeight(0).Padding(0, 5, 6, 5)
 		body.Children(func() {
+			// What went wrong floats over the top of the terminal: it takes
+			// no room, so the terminal is not resized (and the agent in it
+			// does not redraw) when it comes and goes.
+			if p.dropNote != "" && p.dropErr {
+				ui.Row(c).Absolute().Top(6).Left(10).Right(10).PassThrough().Children(func() {
+					ui.Box(c).Grow(1).Background(k.panel).Border(1, k.attention).Radius(8).Padding(6, 10, 6, 10).Shadow(0, 4, 14, 0, k.shadowFocused).Children(func() {
+						ui.Text(c, p.dropNote).FontSize(13).FontWeight(500).TextColor(k.attention)
+					})
+				})
+			}
 			if p.term == nil {
 				return
 			}
@@ -303,12 +313,10 @@ func (a *App) paneHeader(c *ui.Context, k *colors, t *Tab, p *Pane, focused, hov
 				ui.Text(c, detail).FontSize(12.5).FontWeight(500).TextColor(k.text.Alpha(0.86)).SingleLine().Ellipsis("…").Shrink(1).MinWidth(0)
 			}
 			a.activityBadge(c, k, p)
-			if p.dropNote != "" {
-				col := k.textMuted
-				if p.dropErr {
-					col = k.attention
-				}
-				ui.Text(c, p.dropNote).FontSize(12).TextColor(col).SingleLine().Ellipsis("…").Shrink(1).MinWidth(0).Tooltip(p.dropNote)
+			// What went wrong is in a banner over the terminal (below), which
+			// has the room to be read; progress stays in the header.
+			if p.dropNote != "" && !p.dropErr {
+				ui.Text(c, p.dropNote).FontSize(12).TextColor(k.textMuted).SingleLine().Ellipsis("…").Shrink(1).MinWidth(0).Tooltip(p.dropNote)
 			}
 		})
 		show := focused || hovered

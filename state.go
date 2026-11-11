@@ -71,11 +71,13 @@ type Pane struct {
 	restored bool
 	startDir string
 	// dropNote is what the last file drop is doing or did, shown in the
-	// header, in red when dropErr; dropSeq tells the note a timer clears
+	// header, or over the terminal in red when dropErr; dropSeq tells the note a timer clears
 	// from a newer one.
 	dropNote string
 	dropErr  bool
 	dropSeq  int
+	// dropFor is how long the note was set to stay; 0 means until replaced.
+	dropFor time.Duration
 }
 
 // App is the state of GoRex's window.

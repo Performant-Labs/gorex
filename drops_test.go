@@ -377,7 +377,7 @@ func TestDropInRemoteServerSession(t *testing.T) {
 			t.Errorf("host %+v: remote %v, err %v", h, remote, err)
 		}
 		a.dropFiles(p, []string{src})
-		if !p.dropErr || !strings.Contains(p.dropNote, "not a name ssh can reach") || p.term.Text() != before {
+		if !p.dropErr || p.dropFor != dropRefusalTime || !strings.Contains(p.dropNote, "not a name ssh can reach") || p.term.Text() != before {
 			t.Errorf("host %+v: note %q", h, p.dropNote)
 		}
 	}
@@ -397,8 +397,11 @@ func TestDropInRemoteServerSession(t *testing.T) {
 	before = p.term.Text()
 	p.info.Program, p.info.Args, p.info.Idle = "ssh", []string{"ssh", "me@elsewhere"}, false
 	a.dropFiles(p, []string{src})
-	if !p.dropErr || !strings.Contains(p.dropNote, "second hop") || p.term.Text() != before {
-		t.Errorf("second hop: note %q, error %v", p.dropNote, p.dropErr)
+	if !p.dropErr || p.dropFor != dropRefusalTime || !strings.Contains(p.dropNote, "second hop") || !strings.Contains(p.dropNote, "session on this computer") || p.term.Text() != before {
+		t.Errorf("second hop: note %q, error %v, stays %v", p.dropNote, p.dropErr, p.dropFor)
+	}
+	if dropRefusalTime <= dropMessageTime {
+		t.Error("a refusal must outlast a progress note")
 	}
 }
 
@@ -465,5 +468,59 @@ func TestDropOnPane(t *testing.T) {
 	waitFor(t, tt, "the ended note", func() bool { a.runPosted(); return strings.Contains(p.dropNote, "ended") })
 	if p.term.Text() != before {
 		t.Error("a path was pasted after the ssh ended")
+	}
+}
+
+// A refusal or failure is a banner over the terminal, with room to be read;
+// progress stays a small note in the header. The banner takes no room: the
+// terminal keeps its size, so the agent in it does not redraw.
+func TestDropErrorBanner(t *testing.T) {
+	a, tt := newTestApp(t)
+	p := a.tab().Focus
+	waitFor(t, tt, "the shell", func() bool { return p.term != nil && strings.Contains(p.term.Text(), testShell.prompt) })
+	name, _ := p.label()
+	head, ok := tt.Find(name)
+	if !ok {
+		t.Fatalf("no header text %q in %q", name, tt.Texts())
+	}
+	cols, rows := p.term.Size()
+
+	p.setDropNote(a, "Copying…", false, 0)
+	tt.Frame()
+	if r, ok := tt.Find("Copying…"); !ok || r.Y >= head.Y+head.H {
+		t.Errorf("progress is not in the header: %v %v (header %v)", r, ok, head)
+	}
+
+	const msg = "Not copied: this pane runs ssh from me@host, a second hop"
+	p.setDropNote(a, msg, true, 0)
+	for i := 0; i < 3; i++ {
+		tt.Frame()
+	}
+	r, ok := tt.Find(msg)
+	if !ok {
+		t.Fatalf("the refusal is not shown: %q", tt.Texts())
+	}
+	if r.Y < head.Y+head.H {
+		t.Errorf("the refusal is in the header, not under it: %v (header %v)", r, head)
+	}
+	if tt.HasText("Copying…") {
+		t.Error("the old note is still shown")
+	}
+	// Painted, not hidden under the terminal: some pixel of the text's box
+	// has the colour the text is drawn in.
+	img, found := tt.Image(), false
+	for y := int(r.Y); y < int(r.Y+r.H) && !found; y++ {
+		for x := int(r.X); x < int(r.X+r.W); x++ {
+			if cr, cg, cb, _ := img.At(x, y).RGBA(); cr>>8 > 0xe0 && cg>>8 > 0x90 && cg>>8 < 0xc8 && cb>>8 < 0x30 || cr>>8 > 0xf0 && cg>>8 > 0xb0 && cb>>8 < 0x40 {
+				found = true
+				break
+			}
+		}
+	}
+	if !found {
+		t.Error("the refusal's text is not painted over the terminal")
+	}
+	if c, rw := p.term.Size(); c != cols || rw != rows {
+		t.Errorf("the banner resized the terminal: %dx%d, was %dx%d", c, rw, cols, rows)
 	}
 }
