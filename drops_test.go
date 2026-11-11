@@ -74,6 +74,13 @@ func TestParseMosh(t *testing.T) {
 		{"-# -p 60001 -4 me@host |", "me@host", nil, true}, // mosh's own -p and -4
 		{"-# --predict=never me@host -- top |", "me@host", nil, true},
 		{"-# --ssh=ssh -p 2222 -i /k/id me@host |", "me@host", []string{"-p", "2222", "-i", "/k/id"}, true},
+		// Getopt::Long also takes a long option's value as the next word.
+		{"-# --port 60001 --family inet me@host |", "me@host", nil, true},
+		{"-# --ssh ssh -p 2222 me@host |", "me@host", []string{"-p", "2222"}, true},
+		{"-# --ssh sshpass me@host |", "", nil, false},
+		{"-# --port |", "", nil, false},
+		// The end of --ssh's command is a guess: mosh's own -p after it is taken as ssh's.
+		{"-# --ssh=ssh -i k -p 60001 me@host |", "me@host", []string{"-i", "k", "-p", "60001"}, true},
 		{"-# --ssh=sshpass me@host |", "", nil, false},
 		{"-# -- ls |", "", nil, false},
 		{"10.0.0.2", "", nil, false},

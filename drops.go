@@ -148,18 +148,34 @@ func parseMosh(args []string) (sshConn, bool) {
 		return sshConn{}, false
 	}
 	// What the ssh of the login gets, from --ssh="ssh -p 2222 -i key": its
-	// tokens follow the option's first word.
+	// tokens follow the option's first word. Quotes are gone, so the end of
+	// that command is a guess: the ssh options that follow it are taken as its,
+	// so with `--ssh="ssh -i key" -p 60001 host` mosh's own -p is read as ssh's
+	// and the copy goes to that port and fails, with the reason in the header.
 	ssh := []string{"ssh"}
-	// Mosh's own options that take a value, in a separate word.
-	moshValue := "p"
+	// Mosh's long options that take a value, which Getopt::Long also takes as
+	// the next word, and its short ones.
+	longValue := map[string]bool{"ssh": true, "port": true, "family": true, "server": true, "client": true,
+		"predict": true, "bind-server": true, "experimental-remote-ip": true}
+	const shortValue = "p"
 	var dest string
 	for i := 0; i < len(t) && dest == ""; i++ {
 		a := t[i]
 		switch {
 		case a == "--":
 			i = len(t)
-		case strings.HasPrefix(a, "--ssh="):
-			if p := strings.TrimPrefix(a, "--ssh="); filepath.Base(p) != "ssh" {
+		case strings.HasPrefix(a, "--"):
+			name, val, attached := strings.Cut(a[2:], "=")
+			if !attached && longValue[name] {
+				if i++; i >= len(t) {
+					return sshConn{}, false
+				}
+				val = t[i]
+			}
+			if name != "ssh" {
+				continue
+			}
+			if filepath.Base(val) != "ssh" {
 				return sshConn{}, false // another program than ssh
 			}
 			for i+1 < len(t) && strings.HasPrefix(t[i+1], "-") && !strings.HasPrefix(t[i+1], "--") {
@@ -170,9 +186,7 @@ func parseMosh(args []string) (sshConn, bool) {
 					ssh = append(ssh, t[i])
 				}
 			}
-		case strings.HasPrefix(a, "--"):
-			// A long option of mosh, with its value attached.
-		case len(a) == 2 && a[0] == '-' && strings.Contains(moshValue, a[1:]):
+		case len(a) == 2 && a[0] == '-' && strings.Contains(shortValue, a[1:]):
 			i++ // its value
 		case len(a) > 1 && a[0] == '-':
 			// -4, -6, -a, -n and the like

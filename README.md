@@ -86,8 +86,10 @@ How a drop or a pasted screenshot reaches an agent:
   a day).
 - **Pane running `mosh`:** the same as `ssh`. mosh replaces itself with
   `mosh-client`, whose first argument still holds the typed command, so GoRex
-  reads the host and a `--ssh=…` command from it and copies over ssh. A
-  `mosh-client` started by hand, with just an address, is not recognised.
+  reads the host and a `--ssh=…` command from it and copies over ssh. The
+  quotes of a `--ssh="…"` command are gone by then, so mosh's own `-p` right
+  after it is read as ssh's; the copy then fails with its reason in the header.
+  A `mosh-client` started by hand, with just an address, is not recognised.
 - **Pane running `ssh`:** the file is copied over a second connection that
   repeats the pane's `-p -i -J -F -o` options (not its forwards, remote
   command or control-master options) to `~/.gorex/drops` on the host, mode 600,
