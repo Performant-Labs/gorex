@@ -70,6 +70,12 @@ type Pane struct {
 	// saved layout whose session was gone.
 	restored bool
 	startDir string
+	// dropNote is what the last file drop is doing or did, shown in the
+	// header, in red when dropErr; dropSeq tells the note a timer clears
+	// from a newer one.
+	dropNote string
+	dropErr  bool
+	dropSeq  int
 }
 
 // App is the state of GoRex's window.

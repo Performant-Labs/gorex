@@ -29,6 +29,16 @@ terminal plugin (Ghostty's libghostty-vt). No webview, no cgo: one ~15 MB app.
 - **Tab icons** stack the tiles of a tab's programs, the focused pane's in
   front, as Rex does. Tabs reorder by dragging, rename by double-click, and
   have a context menu.
+- **Drop files on a pane** to paste their paths, as a terminal does, which
+  is how Claude Code takes an image. When the pane runs `ssh`, the path of
+  this computer means nothing over there, so GoRex first copies the files
+  to `~/.gorex/drops` on that host (a second connection with the pane's own
+  `-p -i -J -F -o` options; it needs key or agent authentication, or a
+  control master already open; files over 20 MB are refused, as opencode
+  refuses them; copies older than a day are removed) and
+  pastes the paths of the copies. Progress and failures show in the pane's
+  header. A second hop (ssh from inside the ssh) is not seen: the files go
+  to the first host.
 - **Host chip** with the machine's name and model; its popover shows the
   chip, memory, OS and the session server.
 - **Command palette** (⇧⌘P, Ctrl+Shift+P, or the ⌘ button): every command, and every pane
