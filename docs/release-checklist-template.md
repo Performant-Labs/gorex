@@ -46,7 +46,7 @@ depends on it stops being conditional.
 - [ ] 3. **No real, ready work left unmerged**
   - `gh pr list -R Performant-Labs/gorex --state open`
   - `main` is not protected, so nothing stops a direct push: everything in this release,
-    including the version bump (step 14), goes through a pull request by convention
+    including the version bump (step 13), goes through a pull request by convention
 - [ ] 4. **If tags are signed (D6): the tag can be signed and GitHub can verify it.** Check now,
   not at step 18
   - The machine that will tag holds the secret key: `gpg --list-secret-keys <key id>`
@@ -67,7 +67,8 @@ CI proves `go vet` and `go test` pass. It cannot run what needs a remote machine
   - Look up the newest versions today: opencode with `brew info opencode`; Claude Code with
     `npm view @anthropic-ai/claude-code dist-tags.latest` (`claude --version` is only what is
     installed here). Record them: `___`
-  - The remote host must reach this Mac by key without a password, have both agents installed,
+  - This Mac must reach the remote host by key without a password (the tests ssh in with
+    `BatchMode`), and the host must have both agents installed,
     Claude Code signed in and trusting the home directory
   - `GOREX_TEST_SSH=<host> go test -count=1 -v -run 'ToRemote|IntoRemote' ./...`. One test sends
     one short model turn to Claude Code
@@ -84,11 +85,11 @@ CI proves `go vet` and `go test` pass. It cannot run what needs a remote machine
   - Quit with ⌘Q and reopen: every tab and pane comes back, programs still running. Then ⌥⌘Q:
     sessions end
   - A Finder drop onto a local pane pastes the path; onto a pane running `ssh`, the file is
-    copied and the remote path pasted. ⌘V with a screenshot on the clipboard does the same
-    (#8). Verified in the native window, not only headlessly: `___`
+    copied and the remote path pasted. ⇧⌘V (Edit ▸ Paste Image) with a screenshot on the
+    clipboard does the same, and ⌘V still pastes text (#8). Verified in the native window, not only headlessly: `___`
   - Light, dark and System appearance; text size (⌘+ ⌘− ⌘0); the Settings window (⌘,)
   - A long command finishing while the window is in the background posts a notification
-  - **Upgrade over the previous release with sessions running** (see step 15 for what to
+  - **Upgrade over the previous release with sessions running** (see step 14 for what to
     expect): `___`
 - [ ] 8. **If Linux or Windows builds ship (D4): run the app once on each.** CI tests them; it
   does not open the app. Not shipped? Write "not shipped: D4"
@@ -103,7 +104,7 @@ and named, not left out. Gathered here, **before** the release notes are written
 - [ ] 10. **Skim the open `bug` issues**
   - `gh issue list -R Performant-Labs/gorex --label bug --state open`
 - [ ] 11. **Write one line per real, still-open issue relevant to this release, with a link**
-  - This exact list goes into the release notes in step 16, verbatim: `___`
+  - This exact list goes into the release notes in step 15, verbatim: `___`
 
 ## Version and release notes
 
