@@ -470,11 +470,21 @@ func (a *App) serverConn() (conn sshConn, remote bool, err error) {
 }
 
 // serverIsLocal tells that a server's host is this computer: the same user
-// with the same home directory.
+// with the same home directory, read as the server reads them (the system's
+// record of the user, the name without its Windows domain). When this computer
+// cannot tell who it is, the server is taken as local, which is what GoRex did
+// before it knew of remote servers.
 func serverIsLocal(h rex.HostInfo) bool {
-	home, err := os.UserHomeDir()
-	u, uerr := user.Current()
-	return err == nil && uerr == nil && h.Home == home && h.User == u.Username
+	u, err := user.Current()
+	if err != nil {
+		return true
+	}
+	name := u.Username[strings.LastIndexByte(u.Username, '\\')+1:]
+	home, theirs := filepath.Clean(u.HomeDir), filepath.Clean(h.Home)
+	if runtime.GOOS == "windows" {
+		return strings.EqualFold(name, h.User) && strings.EqualFold(home, theirs)
+	}
+	return name == h.User && home == theirs
 }
 
 // setDropNote shows a message in the pane's header, and, with a duration,

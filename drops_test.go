@@ -275,6 +275,33 @@ func TestUploadErrors(t *testing.T) {
 	}
 }
 
+// TestServerIsLocal runs everywhere, as the Windows job skips the drop test
+// below: a server is local when it reports this user and home as the system
+// has them, whatever HOME says, and is taken as local when they are unknown.
+func TestServerIsLocal(t *testing.T) {
+	me, err := user.Current()
+	if err != nil {
+		t.Skip("no current user")
+	}
+	name := me.Username[strings.LastIndexByte(me.Username, '\\')+1:]
+	t.Setenv("HOME", t.TempDir())
+	if !serverIsLocal(rex.HostInfo{User: name, Home: me.HomeDir}) {
+		t.Error("this user and home are not local")
+	}
+	if !serverIsLocal(rex.HostInfo{User: name, Home: me.HomeDir + string(filepath.Separator)}) {
+		t.Error("a trailing separator makes the home remote")
+	}
+	if serverIsLocal(rex.HostInfo{User: name, Home: filepath.Join(string(filepath.Separator), "elsewhere", "home")}) {
+		t.Error("another home is local")
+	}
+	if serverIsLocal(rex.HostInfo{User: name + "x", Home: me.HomeDir}) {
+		t.Error("another user is local")
+	}
+	if runtime.GOOS == "windows" && !serverIsLocal(rex.HostInfo{User: strings.ToUpper(name), Home: strings.ToUpper(me.HomeDir)}) {
+		t.Error("Windows names differ only in case")
+	}
+}
+
 // TestDropInRemoteServerSession: in an app whose session server runs on
 // another host, as GoRex Jupiter, the files go to that host.
 func TestDropInRemoteServerSession(t *testing.T) {
@@ -291,9 +318,11 @@ func TestDropInRemoteServerSession(t *testing.T) {
 	os.WriteFile(src, []byte("png"), 0o644)
 
 	// The server is this computer: the local path.
-	here, _ := os.UserHomeDir()
 	me, _ := user.Current()
-	a.hello.Host = rex.HostInfo{Name: "here", User: me.Username, Home: here}
+	a.hello.Host = rex.HostInfo{Name: "here", User: me.Username[strings.LastIndexByte(me.Username, '\\')+1:], Home: me.HomeDir}
+	// HOME in the environment is not what the server reports: the system's
+	// record is, so a changed HOME does not make the local server remote.
+	t.Setenv("HOME", t.TempDir())
 	if _, remote, _ := a.serverConn(); remote {
 		t.Fatal("a server with this user and home is remote")
 	}
