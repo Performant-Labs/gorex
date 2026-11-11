@@ -39,9 +39,6 @@ func withClipboardImage(t *testing.T, png []byte) string {
 func flat(p *Pane) string { return strings.ReplaceAll(p.term.Text(), "\n", "") }
 
 func TestPasteImageInLocalPane(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("shell prompt of the test is Unix's")
-	}
 	want := testPNG(t)
 	dir := withClipboardImage(t, want)
 	a, tt := newTestApp(t)
@@ -58,13 +55,15 @@ func TestPasteImageInLocalPane(t *testing.T) {
 	if !bytes.Equal(got, want) {
 		t.Error("the file is not the image")
 	}
-	if st, _ := os.Stat(files[0]); st.Mode().Perm() != 0o600 {
-		t.Errorf("mode %v", st.Mode())
+	if runtime.GOOS != "windows" { // its modes are not Unix's
+		if st, _ := os.Stat(files[0]); st.Mode().Perm() != 0o600 {
+			t.Errorf("mode %v", st.Mode())
+		}
+		if st, _ := os.Stat(dir); st.Mode().Perm() != 0o700 {
+			t.Errorf("directory mode %v", st.Mode())
+		}
 	}
-	if st, _ := os.Stat(dir); st.Mode().Perm() != 0o700 {
-		t.Errorf("directory mode %v", st.Mode())
-	}
-	waitFor(t, tt, "the path", func() bool { return strings.Contains(flat(p), escapeUnix(files[0])) })
+	waitFor(t, tt, "the path", func() bool { return strings.Contains(flat(p), pasteQuote(files[0])) })
 }
 
 func TestPasteTextWinsOverImage(t *testing.T) {
@@ -167,9 +166,6 @@ func TestSavePasteRemovesOldImages(t *testing.T) {
 // before its terminal does, and pastes the image where the terminal alone
 // would paste nothing.
 func TestPasteKey(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("shell prompt of the test is Unix's")
-	}
 	dir := withClipboardImage(t, testPNG(t))
 	a, tt := newTestApp(t)
 	p := a.tab().Focus
@@ -186,7 +182,7 @@ func TestPasteKey(t *testing.T) {
 	if len(files) != 1 {
 		t.Fatalf("the shortcut with an image on the clipboard wrote %q", files)
 	}
-	waitFor(t, tt, "the image's path", func() bool { return strings.Contains(flat(p), escapeUnix(files[0])) })
+	waitFor(t, tt, "the image's path", func() bool { return strings.Contains(flat(p), pasteQuote(files[0])) })
 
 	tt.SetClipboard("text-from-the-clipboard")
 	tt.Key(mods, key)
@@ -198,9 +194,6 @@ func TestPasteKey(t *testing.T) {
 }
 
 func TestPasteImageCommand(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("shell prompt of the test is Unix's")
-	}
 	dir := withClipboardImage(t, testPNG(t))
 	a, tt := newTestApp(t)
 	p := a.tab().Focus

@@ -157,7 +157,7 @@ func TestUpload(t *testing.T) {
 	}
 	b, _ := os.ReadFile(log)
 	args := strings.Split(strings.TrimSpace(string(b)), "\n")
-	for _, w := range []string{"BatchMode=yes", "ControlMaster=no", "RemoteCommand=none", "-T", "-p", "2222", "me@host"} {
+	for _, w := range []string{"BatchMode=yes", "ControlMaster=no", "RemoteCommand=none", "ClearAllForwardings=yes", "PermitLocalCommand=no", "-T", "-p", "2222", "me@host"} {
 		if !slices.Contains(args, w) {
 			t.Errorf("ssh did not get %q: %q", w, args)
 		}

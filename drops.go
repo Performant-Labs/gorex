@@ -178,7 +178,10 @@ func (c sshConn) upload(ctx context.Context, dir, path, name string) (string, er
 	if st.Size() > maxDropSize {
 		return "", fmt.Errorf("%s is larger than %d MB", filepath.Base(path), maxDropSize>>20)
 	}
-	args := []string{"-T", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", "-o", "ControlMaster=no", "-o", "RemoteCommand=none"}
+	args := []string{"-T", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", "-o", "ControlMaster=no", "-o", "RemoteCommand=none",
+		// What the config gives every connection to the host must not act
+		// twice: forwards the pane already holds, and a local command.
+		"-o", "ClearAllForwardings=yes", "-o", "PermitLocalCommand=no"}
 	args = append(args, c.opts...)
 	args = append(args, "--", c.dest, "sh -c '"+remoteScript(name)+"'")
 	cmd := exec.CommandContext(ctx, sshBin, args...)
