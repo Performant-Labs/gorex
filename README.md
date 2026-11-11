@@ -78,6 +78,9 @@ go run ./tools/mkicon  # redraw resources/icon.png
 `go get -tool github.com/egoist/mygo/cmd/mygo@latest` updates MyGo and its
 CLI together.
 
+To cut a release, copy [`docs/release-checklist-template.md`](docs/release-checklist-template.md)
+into a `Release checklist: vX.Y.Z` issue and work through it.
+
 The app keeps its state in its data directory: the server's socket and
 log, `layout.json` and `settings.json`, in `~/Library/Application
 Support/GoRex` for the built app and `GoRex Dev` for `mygo dev`'s, so
