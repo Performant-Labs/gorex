@@ -297,6 +297,13 @@ func TestDropInRemoteServerSession(t *testing.T) {
 	if _, remote, _ := a.serverConn(); remote {
 		t.Fatal("a server with this user and home is remote")
 	}
+	localCase := filepath.Join(t.TempDir(), "LOCALCASE.png")
+	os.WriteFile(localCase, []byte("png"), 0o644)
+	a.dropFiles(p, []string{localCase})
+	waitFor(t, tt, "the local path", func() bool { return strings.Contains(flat(p), pasteQuote(localCase)) })
+	if b, _ := os.ReadFile(log); len(b) != 0 {
+		t.Errorf("ssh ran for a local server: %s", b)
+	}
 
 	// Another host: copied to it as user@name, and its path pasted.
 	a.hello.Host = rex.HostInfo{Name: "far", User: "andre", Home: "/home/andre"}
