@@ -43,5 +43,8 @@ func commitOf(info *debug.BuildInfo, ok bool) string {
 // showAbout opens the standard About panel with the commit in place of the
 // build number; the name, the version and the copyright are the bundle's.
 func showAbout() {
-	mygo.App.ShowAboutPanel(mygo.AboutPanelOptions{Version: buildCommit()})
+	showAboutPanel(mygo.AboutPanelOptions{Version: buildCommit()})
 }
+
+// showAboutPanel opens the panel; a variable for tests, which cannot open one.
+var showAboutPanel = func(o mygo.AboutPanelOptions) { mygo.App.ShowAboutPanel(o) }

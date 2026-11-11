@@ -304,6 +304,15 @@ func TestSettingsMenuItem(t *testing.T) {
 		if about == nil || about.Click == nil {
 			t.Fatalf("the app menu has no About GoRex that does something: %+v", about)
 		}
+		// Choosing it opens the panel with this build's commit as its version.
+		var got []mygo.AboutPanelOptions
+		old := showAboutPanel
+		showAboutPanel = func(o mygo.AboutPanelOptions) { got = append(got, o) }
+		about.Click(about, nil)
+		showAboutPanel = old
+		if len(got) != 1 || got[0].Version != buildCommit() {
+			t.Errorf("About GoRex opened the panel with %+v, want Version %q", got, buildCommit())
+		}
 		if i := slices.Index(app.Submenu, settings); i < slices.Index(app.Submenu, about) {
 			t.Error("Settings… comes before About")
 		}
