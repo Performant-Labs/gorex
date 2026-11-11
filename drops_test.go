@@ -82,7 +82,13 @@ func TestParseMosh(t *testing.T) {
 		// The end of --ssh's command is a guess: mosh's own -p after it is taken as ssh's.
 		{"-# --ssh=ssh -i k -p 60001 me@host |", "me@host", []string{"-i", "k", "-p", "60001"}, true},
 		{"-# --ssh=sshpass me@host |", "", nil, false},
-		{"-# -- ls |", "", nil, false},
+		// mosh [options] [--] host: a -- before the host.
+		{"-# -- me@host |", "me@host", nil, true},
+		{"-# -4 -- me@host top |", "me@host", nil, true},
+		// A multi-word --server loses its quotes: with a -- after the host,
+		// the host is the last word before it.
+		{"-# --server=LANG=en_US.UTF-8 mosh-server me@host -- top |", "me@host", nil, true},
+		{"-# -- |", "", nil, false},
 		{"10.0.0.2", "", nil, false},
 	} {
 		got, ok := isSSH("mosh-client", []string{"mosh-client", tc.first, "10.0.0.2", "60001"})

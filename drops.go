@@ -158,12 +158,21 @@ func parseMosh(args []string) (sshConn, bool) {
 	longValue := map[string]bool{"ssh": true, "port": true, "family": true, "server": true, "client": true,
 		"predict": true, "bind-server": true, "experimental-remote-ip": true}
 	const shortValue = "p"
-	var dest string
-	for i := 0; i < len(t) && dest == ""; i++ {
+	// The host is the first word that is not an option, and, where a `--`
+	// follows, the last before it: a --server or --client command of several
+	// words, whose quotes are gone, leaves its extra words in front of the
+	// host. Without a `--`, the extra words cannot be told from the host, so
+	// the copy goes to the wrong host and fails.
+	var first, last, afterDash string
+	dashed := false
+	for i := 0; i < len(t) && !dashed; i++ {
 		a := t[i]
 		switch {
 		case a == "--":
-			i = len(t)
+			dashed = true
+			if i+1 < len(t) {
+				afterDash = t[i+1]
+			}
 		case strings.HasPrefix(a, "--"):
 			name, val, attached := strings.Cut(a[2:], "=")
 			if !attached && longValue[name] {
@@ -191,8 +200,18 @@ func parseMosh(args []string) (sshConn, bool) {
 		case len(a) > 1 && a[0] == '-':
 			// -4, -6, -a, -n and the like
 		default:
-			dest = a
+			if first == "" {
+				first = a
+			}
+			last = a
 		}
+	}
+	dest := first
+	switch {
+	case dashed && last != "":
+		dest = last
+	case dashed:
+		dest = afterDash // mosh [options] -- host
 	}
 	if dest == "" {
 		return sshConn{}, false

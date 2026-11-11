@@ -88,7 +88,9 @@ How a drop or a pasted screenshot reaches an agent:
   `mosh-client`, whose first argument still holds the typed command, so GoRex
   reads the host and a `--ssh=…` command from it and copies over ssh. The
   quotes of a `--ssh="…"` command are gone by then, so mosh's own `-p` right
-  after it is read as ssh's; the copy then fails with its reason in the header.
+  after it is read as ssh's, and the extra words of a multi-word `--server` or
+  `--client` are read as the host unless a `--` follows the host; the copy then
+  fails with its reason in the header.
   A `mosh-client` started by hand, with just an address, is not recognised.
 - **Pane running `ssh`:** the file is copied over a second connection that
   repeats the pane's `-p -i -J -F -o` options (not its forwards, remote
