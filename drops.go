@@ -381,6 +381,10 @@ func pasteLine(paths []string, quote func(string) string) string {
 // dropMessageTime is how long a pane's header keeps what a drop did.
 const dropMessageTime = 7 * time.Second
 
+// dropRefusalTime is how long a refusal stays: nothing was done and the user
+// has to act on it, so it must not vanish before it is read.
+const dropRefusalTime = 20 * time.Second
+
 // dropFiles handles files dropped on a pane. On the pane of an ssh, they
 // are copied to its host in the background, and the paste, or the error,
 // comes when that is done.
@@ -399,12 +403,12 @@ func (a *App) dropFilesFrom(p *Pane, files []string, temp bool) {
 	server, serverRemote, serverErr := a.serverConn()
 	switch {
 	case serverErr != nil:
-		p.setDropNote(a, "Not copied: "+serverErr.Error(), true, dropMessageTime)
+		p.setDropNote(a, "Not copied: "+serverErr.Error(), true, dropRefusalTime)
 		return
 	case serverRemote && viaSSH:
 		// The agent is on the host the ssh reaches, which is not the
 		// session's host, where the copy would go: a second hop.
-		p.setDropNote(a, "Not copied: this pane runs ssh from "+server.dest+", a second hop", true, dropMessageTime)
+		p.setDropNote(a, "Not copied: this pane runs ssh from "+server.dest+", a second hop. Drop into a pane that runs the agent on "+server.dest+" itself, or into a session on this computer", true, dropRefusalTime)
 		return
 	case serverRemote:
 		conn = server

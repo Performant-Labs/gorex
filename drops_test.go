@@ -397,8 +397,11 @@ func TestDropInRemoteServerSession(t *testing.T) {
 	before = p.term.Text()
 	p.info.Program, p.info.Args, p.info.Idle = "ssh", []string{"ssh", "me@elsewhere"}, false
 	a.dropFiles(p, []string{src})
-	if !p.dropErr || !strings.Contains(p.dropNote, "second hop") || p.term.Text() != before {
+	if !p.dropErr || !strings.Contains(p.dropNote, "second hop") || !strings.Contains(p.dropNote, "session on this computer") || p.term.Text() != before {
 		t.Errorf("second hop: note %q, error %v", p.dropNote, p.dropErr)
+	}
+	if dropRefusalTime <= dropMessageTime {
+		t.Error("a refusal must outlast a progress note")
 	}
 }
 
