@@ -45,7 +45,7 @@ jobs:
           $code = $LASTEXITCODE
           Write-Output $out
           if ($code -ne 0) { exit $code }
-          $allowed = 'TestUploadToRemote','TestDropIntoRemoteClaude','TestDropIntoRemoteOpencode','TestPasteImageIntoRemoteAgents','TestUpload','TestUploadRemovesOldCopies','TestUploadErrors','TestPasteImageInLocalPane','TestPasteImageInSSHPane','TestPasteKey','TestPasteAfterRole','TestDebugDrop'
+          $allowed = 'TestUploadToRemote','TestDropIntoRemoteClaude','TestDropIntoRemoteOpencode','TestPasteImageIntoRemoteAgents','TestUpload','TestUploadRemovesOldCopies','TestUploadErrors','TestPasteImageInLocalPane','TestPasteImageInSSHPane','TestPasteKey','TestPasteImageCommand','TestDebugDrop'
           $skips = [regex]::Matches($out, '--- SKIP: (\S+)') | Where-Object { $allowed -notcontains $_.Groups[1].Value } | ForEach-Object { $_.Value }
           if ($skips) { Write-Error "Tests skipped on Windows: $($skips -join ', ')"; exit 1 }
           if ($out -notmatch '--- PASS: TestSettingsKeysOnWindows') { Write-Error 'TestSettingsKeysOnWindows did not run'; exit 1 }

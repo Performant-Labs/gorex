@@ -29,9 +29,17 @@ func TestParseSSH(t *testing.T) {
 		{[]string{"ssh", "-L", "8080:localhost:80", "-R", "9:9", "-D", "1080", "-W", "h:1", "host"}, "host", nil, true},
 		{[]string{"ssh", "-o", "LocalForward=1:2:3", "-o", "RemoteCommand=top", "-o", "RequestTTY=force", "host"}, "host", nil, true},
 		{[]string{"ssh", "-o", "ControlMaster=yes", "-o", "ControlPath=/s", "host"}, "host", []string{"-o", "ControlPath=/s"}, true},
-		{[]string{"ssh", "-A", "-t", "-v", "host", "-p", "9"}, "host", nil, true},
-		// The remote command is not read as options.
-		{[]string{"ssh", "host", "-p", "9"}, "host", nil, true},
+		// Options after the host count, as in OpenSSH; the first other word
+		// starts the remote command, and what follows it is not options.
+		{[]string{"ssh", "-A", "-t", "-v", "host", "-p", "9"}, "host", []string{"-p", "9"}, true},
+		{[]string{"ssh", "host", "-p", "9"}, "host", []string{"-p", "9"}, true},
+		{[]string{"ssh", "host", "-i", "id", "-J", "bastion"}, "host", []string{"-i", "id", "-J", "bastion"}, true},
+		{[]string{"ssh", "host", "-4", "-L", "1:2:3", "-p2200"}, "host", []string{"-4", "-p", "2200"}, true},
+		{[]string{"ssh", "host", "ls", "-p", "9"}, "host", nil, true},
+		{[]string{"ssh", "host", "--", "-p", "9"}, "host", nil, true},
+		{[]string{"ssh", "host", "-p"}, "", nil, false},
+		// -P tag selects Match blocks of the config, and takes a value.
+		{[]string{"ssh", "-P", "work", "host"}, "host", []string{"-P", "work"}, true},
 		{[]string{"ssh"}, "", nil, false},
 		{[]string{"ssh", "-p"}, "", nil, false},
 	} {

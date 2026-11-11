@@ -108,8 +108,9 @@ func (a *App) debug(dir, line string) {
 			log.Printf("clip-image: %v", err)
 		}
 	case "paste":
-		// paste: what Command+V does in the focused pane: the clipboard's
-		// text, or its image where there is no text.
+		// paste: what the pane's paste shortcut does (Control+Shift+V; on
+		// macOS Command+V belongs to the Edit menu): the clipboard's text,
+		// or its image where there is no text.
 		win.Update(func() {
 			if t := a.tab(); t != nil && t.Focus != nil {
 				a.pasteClipboard(t.Focus, a.getServices().ReadClipboard())

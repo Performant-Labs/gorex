@@ -51,21 +51,25 @@ type sshConn struct {
 // first. It keeps the options that select the host, the port, the user, the
 // keys, the config and the jump hosts, and leaves what would act on the
 // other connection too: forwards, a remote command, a terminal, a control
-// master.
+// master. Like OpenSSH, it reads options after the host too (ssh host -p 22)
+// and stops at the first other word, which starts the remote command.
 func parseSSH(args []string) (sshConn, bool) {
-	const withValue = "BbcDEeFIiJLlmOopQRSWw"
+	const withValue = "BbcDEeFIiJLlmOoPpQRSWw"
 	var c sshConn
 	for i := 1; i < len(args); i++ {
 		a := args[i]
 		if a == "--" {
-			if i+1 < len(args) {
+			if c.dest == "" && i+1 < len(args) {
 				c.dest = args[i+1]
 			}
 			break
 		}
 		if len(a) < 2 || a[0] != '-' {
-			c.dest = a
-			break
+			if c.dest == "" {
+				c.dest = a
+				continue
+			}
+			break // the remote command
 		}
 		for j := 1; j < len(a); j++ {
 			f := a[j]
@@ -96,7 +100,7 @@ func parseSSH(args []string) (sshConn, bool) {
 // what to do on it.
 func keepOption(f byte, v string) bool {
 	switch f {
-	case 'B', 'b', 'c', 'F', 'I', 'i', 'J', 'l', 'm', 'p', 'S':
+	case 'B', 'b', 'c', 'F', 'I', 'i', 'J', 'l', 'm', 'P', 'p', 'S':
 		return true
 	case 'o':
 		k, _, _ := strings.Cut(strings.ReplaceAll(v, "=", " "), " ")

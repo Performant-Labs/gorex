@@ -30,7 +30,7 @@ terminal plugin (Ghostty's libghostty-vt). No webview, no cgo: one ~15 MB app.
   front, as Rex does. Tabs reorder by dragging, rename by double-click, and
   have a context menu.
 - **Images for Claude Code and opencode.** Drop a file on a pane, or paste a
-  screenshot (⌘V with an image and no text on the clipboard), and GoRex pastes
+  screenshot (⇧⌘V, Edit ▸ Paste Image; Ctrl+Shift+V elsewhere), and GoRex pastes
   the file's path as one bracketed paste, which both agents turn into an
   attachment (`[Image #1]` in Claude Code, `[Image 1]` in opencode). Text on
   the clipboard still pastes as text, and so do files copied in the Finder.
@@ -61,7 +61,8 @@ terminal plugin (Ghostty's libghostty-vt). No webview, no cgo: one ~15 MB app.
 | ⇧⌘R | Ctrl+Shift+R | Rename tab |
 | ⇧⌘P, ⌘P | Ctrl+Shift+P | Command palette |
 | ⌘K | Ctrl+Shift+K | Clear |
-| ⌘V | Ctrl+Shift+V | Paste text, or an image where the clipboard has no text |
+| ⌘V | Ctrl+Shift+V | Paste text (elsewhere than on macOS, an image too where the clipboard has no text) |
+| ⇧⌘V | Ctrl+Shift+V | Paste Image: the clipboard's image, as a dropped file |
 | ⌘+ ⌘− ⌘0 | Ctrl+= Ctrl+- Ctrl+0 | Text size |
 | ⌘, | Ctrl+, | Settings |
 | ⌥⌘Q | | Quit and end all sessions |
@@ -80,7 +81,9 @@ How a drop or a pasted screenshot reaches an agent:
 
 - **Local pane:** the file's absolute path, with shell characters escaped, in
   one bracketed paste. A pasted screenshot is first written to
-  `~/Library/Caches/GoRex/pastes` (mode 600; removed after a day).
+  `GoRex/pastes` in the user cache directory (`~/Library/Caches` on macOS,
+  `~/.cache` on Linux, `%LocalAppData%` on Windows; mode 600; removed after
+  a day).
 - **Pane running `ssh`:** the file is copied over a second connection that
   repeats the pane's `-p -i -J -F -o` options (not its forwards, remote
   command or control-master options) to `~/.gorex/drops` on the host, mode 600,
@@ -110,7 +113,8 @@ Not handled: a second hop (ssh run inside the ssh), `mosh`, `docker exec`
 and password-only hosts (the file goes to the first ssh host, or the copy
 fails); folders; images dragged out of a browser (a drop gives GoRex file
 paths only); and pasting a screenshot from the terminal's right-click menu
-(use ⌘V or Edit ▸ Paste).
+or with ⌘V on macOS, where the Edit menu keeps ⌘V for text (use ⇧⌘V or
+Edit ▸ Paste Image).
 
 Dropping the same file on other terminals, read from their source and not
 tried with a real drag: iTerm2, Ghostty, WezTerm and Alacritty paste the local

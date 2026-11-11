@@ -51,6 +51,9 @@ var (
 	cmdGrowUp      = command{Title: "Move Divider Up", Accel: "CmdOrCtrl+Ctrl+Up", Keys: "⌃⌘↑", Other: shortcut{ui.Alt | ui.Shift, ui.KeyUp}, Run: func(a *App) { a.resizeFocused(0, -1) }}
 	cmdGrowDown    = command{Title: "Move Divider Down", Accel: "CmdOrCtrl+Ctrl+Down", Keys: "⌃⌘↓", Other: shortcut{ui.Alt | ui.Shift, ui.KeyDown}, Run: func(a *App) { a.resizeFocused(0, 1) }}
 	cmdClear       = command{Title: "Clear Screen and Scrollback", Accel: "CmdOrCtrl+K", Keys: "⌘K", Other: ctrlShift(ui.KeyK), Run: func(a *App) { a.clearFocused() }, Hidden: true}
+	// Paste Image is Command+V's image half where the menu keeps Command+V
+	// for text; see paste.go. Elsewhere Control+Shift+V pastes both.
+	cmdPasteImage  = command{Title: "Paste Image", Accel: "CmdOrCtrl+Shift+V", Keys: "⇧⌘V", Run: func(a *App) { a.pasteImageFocused() }}
 	cmdClearScroll = command{Title: "Clear Scrollback", Run: func(a *App) { a.clearFocused() }}
 	cmdRestart     = command{Title: "Restart Shell in Pane", Run: func(a *App) { a.restartFocused() }}
 	cmdBigger      = command{Title: "Bigger Text", Accel: "CmdOrCtrl+=", Keys: "⌘+", Other: shortcut{ui.Ctrl, ui.KeyEqual}, Run: func(a *App) { a.setFontSize(termFont.Size + 1) }, AppWide: true}
@@ -70,7 +73,7 @@ var paletteCommands = []*command{
 	&cmdFocusLeft, &cmdFocusRight, &cmdFocusUp, &cmdFocusDown,
 	&cmdGrowLeft, &cmdGrowRight, &cmdGrowUp, &cmdGrowDown,
 	&cmdBigger, &cmdSmaller, &cmdActualSize, &cmdLight, &cmdDark, &cmdSystem, &cmdSettings,
-	&cmdClearScroll, &cmdRestart, &cmdEndAll,
+	&cmdPasteImage, &cmdClearScroll, &cmdRestart, &cmdEndAll,
 }
 
 // commands are all of them.
@@ -194,9 +197,8 @@ func (a *App) menu() *mygo.Menu {
 			mygo.Separator(),
 			{Role: mygo.RoleCut},
 			{Role: mygo.RoleCopy},
-			// The role pastes the text; the click pastes an image where
-			// the clipboard has no text.
-			{Role: mygo.RolePaste, Click: func(_ *mygo.MenuItem, win *mygo.Window) { a.menuPaste(win) }},
+			{Role: mygo.RolePaste},
+			item(&cmdPasteImage),
 			{Role: mygo.RoleSelectAll},
 			mygo.Separator(),
 			item(&cmdClear),

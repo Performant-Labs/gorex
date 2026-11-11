@@ -18,6 +18,13 @@ import (
 //
 // Text wins: when the clipboard has any, it is pasted as text, as before. Files
 // copied in the Finder keep that too, as their names are text.
+//
+// Which key does it depends on the platform. On macOS the Edit menu's Paste
+// owns Command+V: AppKit gives the key to the menu, which sends paste: to the
+// terminal (text only), so the key never reaches the pane's shortcut and a
+// role item's Click is not called. Edit ▸ Paste Image (Shift+Command+V) is an
+// item of its own, so it runs. Elsewhere Control+Shift+V is the terminal's own
+// paste key and reaches the pane's shortcut.
 
 var (
 	// clipboardImage returns the image on the clipboard as PNG, nil when it
@@ -56,17 +63,21 @@ func (a *App) pasteClipboard(p *Pane, text string) {
 		p.term.Paste(text)
 		return
 	}
-	a.pasteImage(p)
+	a.pasteImage(p, false)
 }
 
 // pasteImage pastes the image on the clipboard into the pane, as a dropped
-// file; nothing happens when there is none.
-func (a *App) pasteImage(p *Pane) {
+// file. When there is none nothing happens, unless asked for (loud), which
+// says so in the pane's header.
+func (a *App) pasteImage(p *Pane, loud bool) {
 	if p == nil || p.term == nil || p.closed {
 		return
 	}
 	png := clipboardImage()
 	if len(png) == 0 {
+		if loud {
+			p.setDropNote(a, "No image on the clipboard", true, dropMessageTime)
+		}
 		return
 	}
 	if len(png) > maxDropSize {
@@ -81,23 +92,15 @@ func (a *App) pasteImage(p *Pane) {
 	a.dropFilesFrom(p, []string{path}, true)
 }
 
-// menuPaste runs after Edit ▸ Paste has done what its role does, which is
-// the text: it pastes the image where there is no text. win is the window
-// the menu was chosen in.
-func (a *App) menuPaste(win *mygo.Window) {
-	if win == nil || win != a.win {
+// pasteImageFocused is Edit ▸ Paste Image: the clipboard's image into the
+// focused pane. A field of the app that has the focus, as the palette's, is
+// not a pane to paste into.
+func (a *App) pasteImageFocused() {
+	if a.paletteOpen || a.renaming != nil {
 		return
 	}
-	a.pasteAfterRole(a.getServices().ReadClipboard())
-}
-
-// pasteAfterRole is menuPaste once the window is known to be the main one.
-func (a *App) pasteAfterRole(text string) {
-	if text != "" || a.paletteOpen || a.renaming != nil {
-		return // the role pasted the text, or a field has the focus
-	}
 	if t := a.tab(); t != nil {
-		a.pasteImage(t.Focus)
+		a.pasteImage(t.Focus, true)
 	}
 }
 

@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -196,7 +197,7 @@ func TestPasteKey(t *testing.T) {
 	}
 }
 
-func TestPasteAfterRole(t *testing.T) {
+func TestPasteImageCommand(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("shell prompt of the test is Unix's")
 	}
@@ -206,26 +207,31 @@ func TestPasteAfterRole(t *testing.T) {
 	waitFor(t, tt, "the shell", func() bool { return p.term != nil && strings.Contains(p.term.Text(), testShell.prompt) })
 	count := func() int { f, _ := filepath.Glob(filepath.Join(dir, "paste-*.png")); return len(f) }
 
-	// The role pasted the text, or a field of the app has the focus: not
-	// the image.
-	a.pasteAfterRole("some text")
+	// A field of the app has the focus: not a pane to paste into.
 	a.paletteOpen = true
-	a.pasteAfterRole("")
+	a.pasteImageFocused()
 	a.paletteOpen = false
 	a.renaming = a.tab()
-	a.pasteAfterRole("")
+	a.pasteImageFocused()
 	a.renaming = nil
 	if n := count(); n != 0 {
 		t.Fatalf("%d images pasted when they should not", n)
 	}
-	a.pasteAfterRole("")
-	if n := count(); n != 1 {
-		t.Fatalf("%d images pasted for an empty clipboard", n)
+	// The command is in the menus and the palette, and runs the same.
+	if !slices.Contains(commands, &cmdPasteImage) || !slices.Contains(paletteCommands, &cmdPasteImage) {
+		t.Error("Paste Image is not a command of the palette")
 	}
-	// And not in another window of the app.
-	a.menuPaste(nil)
+	cmdPasteImage.Run(a)
+	waitFor(t, tt, "the pasted image", func() bool { a.runPosted(); return count() == 1 })
+
+	// With no image it says so, and pastes nothing.
+	clipboardImage = func() []byte { return nil }
+	a.pasteImageFocused()
+	if !p.dropErr || !strings.Contains(p.dropNote, "No image") {
+		t.Errorf("header note %q (error %v)", p.dropNote, p.dropErr)
+	}
 	if n := count(); n != 1 {
-		t.Errorf("a paste with no window pasted an image: %d", n)
+		t.Errorf("%d images after an empty clipboard", n)
 	}
 }
 
