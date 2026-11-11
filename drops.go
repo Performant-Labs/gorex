@@ -282,7 +282,14 @@ const dropMessageTime = 7 * time.Second
 // dropFiles handles files dropped on a pane. On the pane of an ssh, they
 // are copied to its host in the background, and the paste, or the error,
 // comes when that is done.
-func (a *App) dropFiles(p *Pane, files []string) {
+func (a *App) dropFiles(p *Pane, files []string) { a.dropFilesFrom(p, files, false) }
+
+// dropFilesFrom is dropFiles for files GoRex made itself, as a pasted image,
+// when temp is set: they are removed once copied to an ssh host, whether it
+// worked or not, as the copy is the one that matters. A local pane's agent
+// reads the file by its path, so there it stays, and savePaste removes it
+// later.
+func (a *App) dropFilesFrom(p *Pane, files []string, temp bool) {
 	if p.term == nil || p.closed || len(files) == 0 {
 		return
 	}
@@ -295,6 +302,11 @@ func (a *App) dropFiles(p *Pane, files []string) {
 	p.setDropNote(a, "Copying to "+conn.dest+"…", false, 0)
 	go func() {
 		paths, err := conn.uploadAll(dir, files)
+		if temp {
+			for _, f := range files {
+				os.Remove(f)
+			}
+		}
 		a.laterService(func() {
 			if p.closed {
 				return

@@ -238,6 +238,12 @@ func (a *App) paneCard(c *ui.Context, k *colors, t *Tab, p *Pane) ui.Element {
 		a.focusReq = p
 		a.dropFiles(p, files)
 	}
+	// Paste, while a terminal of the pane has the focus: the clipboard's
+	// text, or its image where there is no text. The terminal's own paste
+	// takes text only.
+	if mods, key := pasteKey(); card.Shortcut(mods, key) {
+		a.pasteClipboard(p, c.ReadClipboard())
+	}
 	card.Background(bg).Border(1, border).
 		Shadow(0, 1, 2, 0, shadow).
 		Shadow(0, 6, 22, -2, shadow)

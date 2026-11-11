@@ -194,7 +194,9 @@ func (a *App) menu() *mygo.Menu {
 			mygo.Separator(),
 			{Role: mygo.RoleCut},
 			{Role: mygo.RoleCopy},
-			{Role: mygo.RolePaste},
+			// The role pastes the text; the click pastes an image where
+			// the clipboard has no text.
+			{Role: mygo.RolePaste, Click: func(_ *mygo.MenuItem, win *mygo.Window) { a.menuPaste(win) }},
 			{Role: mygo.RoleSelectAll},
 			mygo.Separator(),
 			item(&cmdClear),
