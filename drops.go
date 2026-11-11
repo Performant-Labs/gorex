@@ -7,11 +7,14 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
 	"unicode"
+
+	"gorex/internal/rex"
 )
 
 // Files dropped on a pane become text in it: the path of each file, as a
@@ -392,8 +395,20 @@ func (a *App) dropFilesFrom(p *Pane, files []string, temp bool) {
 	if p.term == nil || p.closed || len(files) == 0 {
 		return
 	}
-	conn, remote := isSSH(p.info.Program, p.info.Args)
-	if !remote {
+	conn, viaSSH := isSSH(p.info.Program, p.info.Args)
+	server, serverRemote, serverErr := a.serverConn()
+	switch {
+	case serverErr != nil:
+		p.setDropNote(a, "Not copied: "+serverErr.Error(), true, dropMessageTime)
+		return
+	case serverRemote && viaSSH:
+		// The agent is on the host the ssh reaches, which is not the
+		// session's host, where the copy would go: a second hop.
+		p.setDropNote(a, "Not copied: this pane runs ssh from "+server.dest+", a second hop", true, dropMessageTime)
+		return
+	case serverRemote:
+		conn = server
+	case !viaSSH:
 		p.term.Paste(pasteLine(files, pasteQuote))
 		return
 	}
@@ -414,9 +429,15 @@ func (a *App) dropFilesFrom(p *Pane, files []string, temp bool) {
 				p.setDropNote(a, "Drop failed: "+err.Error(), true, dropMessageTime)
 				return
 			}
-			// The program the paste is for must still be the ssh the
-			// files went to: after it ended the shell is the client's.
-			if now, ok := isSSH(p.info.Program, p.info.Args); !ok || now.dest != conn.dest {
+			// The program the paste is for must still be where the files
+			// went: after an ssh ended the shell is the client's, and in
+			// a session on another host, an ssh started since leaves it.
+			now, ok := isSSH(p.info.Program, p.info.Args)
+			if serverRemote && ok {
+				p.setDropNote(a, "An ssh started in the pane; copies are in ~/"+remoteDropDir+" on "+conn.dest, true, dropMessageTime)
+				return
+			}
+			if !serverRemote && (!ok || now.dest != conn.dest) {
 				p.setDropNote(a, "The ssh to "+conn.dest+" ended; copies are in ~/"+remoteDropDir+" there", true, dropMessageTime)
 				return
 			}
@@ -424,6 +445,46 @@ func (a *App) dropFilesFrom(p *Pane, files []string, temp bool) {
 			p.setDropNote(a, "", false, 0)
 		})
 	}()
+}
+
+// serverConn is how to reach the host of the session server when it is not
+// this computer, as in GoRex Jupiter, whose server runs on Jupiter and whose
+// socket is forwarded here: the agents of its panes read the files on that
+// host. It is the user and the name the server reports, resolved by this
+// machine's ssh config.
+func (a *App) serverConn() (conn sshConn, remote bool, err error) {
+	h := a.hello.Host
+	if h.Name == "" || h.User == "" || serverIsLocal(h) {
+		return sshConn{}, false, nil
+	}
+	// The server says these, not the user: nothing that ssh could read as an
+	// option or as more than a name.
+	for _, s := range []string{h.User, h.Name} {
+		if s[0] == '-' || strings.IndexFunc(s, func(r rune) bool {
+			return !(r == '.' || r == '_' || r == '-' || unicode.IsLetter(r) || unicode.IsDigit(r))
+		}) >= 0 {
+			return sshConn{}, true, fmt.Errorf("the server's host %q is not a name ssh can reach", h.User+"@"+h.Name)
+		}
+	}
+	return sshConn{dest: h.User + "@" + h.Name}, true, nil
+}
+
+// serverIsLocal tells that a server's host is this computer: the same user
+// with the same home directory, read as the server reads them (the system's
+// record of the user, the name without its Windows domain). When this computer
+// cannot tell who it is, the server is taken as local, which is what GoRex did
+// before it knew of remote servers.
+func serverIsLocal(h rex.HostInfo) bool {
+	u, err := user.Current()
+	if err != nil {
+		return true
+	}
+	name := u.Username[strings.LastIndexByte(u.Username, '\\')+1:]
+	home, theirs := filepath.Clean(u.HomeDir), filepath.Clean(h.Home)
+	if runtime.GOOS == "windows" {
+		return strings.EqualFold(name, h.User) && strings.EqualFold(home, theirs)
+	}
+	return name == h.User && home == theirs
 }
 
 // setDropNote shows a message in the pane's header, and, with a duration,

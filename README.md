@@ -84,6 +84,12 @@ How a drop or a pasted screenshot reaches an agent:
   `GoRex/pastes` in the user cache directory (`~/Library/Caches` on macOS,
   `~/.cache` on Linux, `%LocalAppData%` on Windows; mode 600; removed after
   a day).
+- **Session on another machine** (GoRex Jupiter: the session server runs on
+  Jupiter and its socket is forwarded here): the agents run there, so the file
+  is copied to `~/.gorex/drops` on the server's host as `user@name`, as the
+  server reports them and this Mac's ssh config resolves them, and that path
+  is pasted. A pane running `ssh` or `mosh` inside such a session is a second
+  hop: nothing is copied, and the header says so.
 - **Pane running `mosh`:** the same as `ssh`. mosh replaces itself with
   `mosh-client`, whose first argument still holds the typed command, so GoRex
   reads the host and a `--ssh=…` command from it and copies over ssh. The

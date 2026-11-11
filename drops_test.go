@@ -1,7 +1,9 @@
 package main
 
 import (
+	"gorex/internal/rex"
 	"os"
+	"os/user"
 	"path/filepath"
 	"runtime"
 	"slices"
@@ -270,6 +272,133 @@ func TestUploadErrors(t *testing.T) {
 	entries, _ := os.ReadDir(filepath.Join(home, remoteDropDir))
 	if len(entries) != 0 {
 		t.Errorf("failed drops left copies: %v", entries)
+	}
+}
+
+// TestServerIsLocal runs everywhere, as the Windows job skips the drop test
+// below: a server is local when it reports this user and home as the system
+// has them, whatever HOME says, and is taken as local when they are unknown.
+func TestServerIsLocal(t *testing.T) {
+	me, err := user.Current()
+	if err != nil {
+		t.Skip("no current user")
+	}
+	name := me.Username[strings.LastIndexByte(me.Username, '\\')+1:]
+	t.Setenv("HOME", t.TempDir())
+	if !serverIsLocal(rex.HostInfo{User: name, Home: me.HomeDir}) {
+		t.Error("this user and home are not local")
+	}
+	if !serverIsLocal(rex.HostInfo{User: name, Home: me.HomeDir + string(filepath.Separator)}) {
+		t.Error("a trailing separator makes the home remote")
+	}
+	if serverIsLocal(rex.HostInfo{User: name, Home: filepath.Join(string(filepath.Separator), "elsewhere", "home")}) {
+		t.Error("another home is local")
+	}
+	if serverIsLocal(rex.HostInfo{User: name + "x", Home: me.HomeDir}) {
+		t.Error("another user is local")
+	}
+	if runtime.GOOS == "windows" && !serverIsLocal(rex.HostInfo{User: strings.ToUpper(name), Home: strings.ToUpper(me.HomeDir)}) {
+		t.Error("Windows names differ only in case")
+	}
+}
+
+// TestDropInRemoteServerSession: in an app whose session server runs on
+// another host, as GoRex Jupiter, the files go to that host.
+func TestDropInRemoteServerSession(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("the fake ssh is a shell script")
+	}
+	home := t.TempDir()
+	log := fakeSSH(t, home)
+	a, tt := newTestApp(t)
+	p := a.tab().Focus
+	waitFor(t, tt, "the shell", func() bool { return p.term != nil && strings.Contains(p.term.Text(), testShell.prompt) })
+	src := filepath.Join(t.TempDir(), "CLIENTONLY", "shot.png")
+	os.MkdirAll(filepath.Dir(src), 0o755)
+	os.WriteFile(src, []byte("png"), 0o644)
+
+	// The server is this computer: the local path.
+	// What the test app's real local server reported is local: a mismatch
+	// between that and what the client compares would route every local drop
+	// through ssh.
+	hello, err := a.client.Hello()
+	if err != nil || hello.Host.User == "" || hello.Host.Home == "" {
+		t.Fatalf("hello %+v: %v", hello.Host, err)
+	}
+	a.hello = hello
+	if _, remote, _ := a.serverConn(); remote {
+		t.Fatalf("the local server's own report %+v is remote", a.hello.Host)
+	}
+	me, _ := user.Current()
+	a.hello.Host = rex.HostInfo{Name: "here", User: me.Username[strings.LastIndexByte(me.Username, '\\')+1:], Home: me.HomeDir}
+	// HOME in the environment is not what the server reports: the system's
+	// record is, so a changed HOME does not make the local server remote.
+	t.Setenv("HOME", t.TempDir())
+	if _, remote, _ := a.serverConn(); remote {
+		t.Fatal("a server with this user and home is remote")
+	}
+	localCase := filepath.Join(t.TempDir(), "LOCALCASE.png")
+	os.WriteFile(localCase, []byte("png"), 0o644)
+	a.dropFiles(p, []string{localCase})
+	waitFor(t, tt, "the local path", func() bool { return strings.Contains(flat(p), pasteQuote(localCase)) })
+	if b, _ := os.ReadFile(log); len(b) != 0 {
+		t.Errorf("ssh ran for a local server: %s", b)
+	}
+
+	// Another host: copied to it as user@name, and its path pasted.
+	a.hello.Host = rex.HostInfo{Name: "far", User: "andre", Home: "/home/andre"}
+	conn, remote, err := a.serverConn()
+	if !remote || err != nil || conn.dest != "andre@far" {
+		t.Fatalf("serverConn = %q %v", conn.dest, remote)
+	}
+	a.dropFiles(p, []string{src})
+	tt.Type("")
+	waitFor(t, tt, "the remote path", func() bool {
+		a.runPosted()
+		return strings.Contains(flat(p), filepath.Join(home, remoteDropDir)+"/")
+	})
+	if strings.Contains(flat(p), "CLIENTONLY") {
+		t.Error("the pane got the path on this computer")
+	}
+	if b, _ := os.ReadFile(log); !strings.Contains(string(b), "andre@far") {
+		t.Errorf("ssh was not run for andre@far: %s", b)
+	}
+
+	// What the server reports is checked before it reaches ssh.
+	before := p.term.Text()
+	for _, h := range []rex.HostInfo{
+		{Name: "far", User: "-oProxyCommand=x", Home: "/h"},
+		{Name: "-far", User: "andre", Home: "/h"},
+		{Name: "far host", User: "andre", Home: "/h"},
+		{Name: "far", User: "an;dre", Home: "/h"},
+	} {
+		a.hello.Host = h
+		if _, remote, err := a.serverConn(); !remote || err == nil {
+			t.Errorf("host %+v: remote %v, err %v", h, remote, err)
+		}
+		a.dropFiles(p, []string{src})
+		if !p.dropErr || !strings.Contains(p.dropNote, "not a name ssh can reach") || p.term.Text() != before {
+			t.Errorf("host %+v: note %q", h, p.dropNote)
+		}
+	}
+	a.hello.Host = rex.HostInfo{Name: "far", User: "andre", Home: "/home/andre"}
+
+	// An ssh that starts in the pane while the copy runs: nothing is pasted.
+	before = p.term.Text()
+	a.dropFiles(p, []string{src})
+	p.info.Program, p.info.Args, p.info.Idle = "ssh", []string{"ssh", "me@elsewhere"}, false
+	waitFor(t, tt, "the note", func() bool { a.runPosted(); return strings.Contains(p.dropNote, "An ssh started") })
+	if p.term.Text() != before {
+		t.Error("a path was pasted into the ssh that started")
+	}
+	p.info.Program, p.info.Args, p.info.Idle = "sh", nil, true
+
+	// An ssh inside the session is a second hop: nothing is copied.
+	before = p.term.Text()
+	p.info.Program, p.info.Args, p.info.Idle = "ssh", []string{"ssh", "me@elsewhere"}, false
+	a.dropFiles(p, []string{src})
+	if !p.dropErr || !strings.Contains(p.dropNote, "second hop") || p.term.Text() != before {
+		t.Errorf("second hop: note %q, error %v", p.dropNote, p.dropErr)
 	}
 }
 
