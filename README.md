@@ -168,6 +168,7 @@ resizes from its sides and bottom, not its top.
 | `view.go`, `tabs.go`, `host.go`, `commands.go` | the interface: title bar, tabs, panes, host popover, menus and palette |
 | `programs.go` | how programs show: names, glyphs, tile colors |
 | `style.go`, `settings.go` | colors, fonts, terminal themes; appearance and text size, and `settings.json` and its migration from version 1 |
+| `about.go` | the About panel, which shows the commit the build was made from beside the version |
 | `preferences.go` | the Settings window: General, and the Default profile's text size |
 | `internal/rex` | the session server and its client: PTYs, foreground processes, headless screens, the socket protocol |
 
