@@ -197,6 +197,14 @@ func TestPasteKey(t *testing.T) {
 	tt.Key(mods, key)
 	tt.Frame()
 	waitFor(t, tt, "the text", func() bool { return strings.Contains(flat(p), "text-from-the-clipboard") })
+	// Once: the pane took the key before the terminal, which would have
+	// pasted it again.
+	for k := 0; k < 3; k++ {
+		tt.Frame()
+	}
+	if n := strings.Count(flat(p), "text-from-the-clipboard"); n != 1 {
+		t.Errorf("the text was pasted %d times", n)
+	}
 	if files2, _ := filepath.Glob(filepath.Join(dir, "paste-*.png")); len(files2) != 1 {
 		t.Errorf("an image was written with text on the clipboard: %q", files2)
 	}

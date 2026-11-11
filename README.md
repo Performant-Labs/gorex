@@ -62,7 +62,7 @@ terminal plugin (Ghostty's libghostty-vt). No webview, no cgo: one ~15 MB app.
 | ⇧⌘P, ⌘P | Ctrl+Shift+P | Command palette |
 | ⌘K | Ctrl+Shift+K | Clear |
 | ⌘V | Ctrl+Shift+V | Paste text (elsewhere than on macOS, an image too where the clipboard has no text) |
-| ⇧⌘V | Ctrl+Shift+V | Paste Image: the clipboard's image, as a dropped file |
+| ⇧⌘V | Edit menu, palette | Paste Image: the clipboard's image, as a dropped file |
 | ⌘+ ⌘− ⌘0 | Ctrl+= Ctrl+- Ctrl+0 | Text size |
 | ⌘, | Ctrl+, | Settings |
 | ⌥⌘Q | | Quit and end all sessions |
