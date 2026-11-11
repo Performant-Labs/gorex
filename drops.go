@@ -223,15 +223,17 @@ func (c sshConn) uploadAll(dir string, files []string) ([]string, error) {
 	return paths, nil
 }
 
-// limitBuffer keeps the first n bytes written to it.
+// limitBuffer keeps the last n bytes written to it: ssh says why it failed
+// at the end of its output, after any debug lines.
 type limitBuffer struct {
 	b *bytes.Buffer
 	n int
 }
 
 func (l *limitBuffer) Write(p []byte) (int, error) {
-	if room := l.n - l.b.Len(); room > 0 {
-		l.b.Write(p[:min(room, len(p))])
+	l.b.Write(p)
+	if extra := l.b.Len() - l.n; extra > 0 {
+		l.b.Next(extra)
 	}
 	return len(p), nil
 }

@@ -207,6 +207,11 @@ func TestUploadErrors(t *testing.T) {
 	if _, err := conn.uploadAll("", []string{src}); err == nil || !strings.Contains(err.Error(), "Permission denied (publickey).") || strings.Contains(err.Error(), "Warning") {
 		t.Errorf("a failed ssh gave %v", err)
 	}
+	// Debug output before the complaint does not push it out.
+	t.Setenv("GOREX_FAKE_FAIL", strings.Repeat("debug1: noise noise noise noise\n", 400)+"me@host: Connection refused")
+	if _, err := conn.uploadAll("", []string{src}); err == nil || !strings.Contains(err.Error(), "Connection refused") || strings.Contains(err.Error(), "debug1") {
+		t.Errorf("a failed ssh with 4 KB of debug output gave %v", err)
+	}
 	t.Setenv("GOREX_FAKE_FAIL", "")
 
 	// A directory, a missing file and a file too large are not sent.
