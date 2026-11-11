@@ -15,11 +15,25 @@ concurrency:
 jobs:
   test:
     name: test (${{ matrix.os }})
+    # Counts from the start of the job, not the queue.
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+    # Linux runs on the org's own runners (the GridOps `linux` pool, label
+    # self-hosted-linux, org variable CI_RUNNER); macOS and Windows are
+    # GitHub-hosted. With CI_RUNNER unset it is ubuntu-latest, as in the org's
+    # other repositories (also the off switch if the pool is down: unset it).
+    #
+    # The expression below sends a fork's pull request to GitHub's runners, but
+    # it is NOT the security boundary: for a pull_request a fork's own copy of
+    # this file runs, and it can name any label. This repository is public, so
+    # the boundary is the repository setting "Require approval for all external
+    # contributors" (Settings > Actions > General; set to all_external_contributors),
+    # under which no fork's workflow runs until a maintainer has read the diff,
+    # workflow changes included. Keep it on.
+    runs-on: ${{ (matrix.os == 'ubuntu-latest' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)) && (vars.CI_RUNNER || 'ubuntu-latest') || matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
