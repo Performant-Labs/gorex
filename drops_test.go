@@ -470,3 +470,36 @@ func TestDropOnPane(t *testing.T) {
 		t.Error("a path was pasted after the ssh ended")
 	}
 }
+
+// A refusal or failure is a banner under the header, with room to be read;
+// progress stays a small note in the header.
+func TestDropErrorBanner(t *testing.T) {
+	a, tt := newTestApp(t)
+	p := a.tab().Focus
+	waitFor(t, tt, "the shell", func() bool { return p.term != nil && strings.Contains(p.term.Text(), testShell.prompt) })
+	name, _ := p.label()
+	head, ok := tt.Find(name)
+	if !ok {
+		t.Fatalf("no header text %q in %q", name, tt.Texts())
+	}
+
+	p.setDropNote(a, "Copying…", false, 0)
+	tt.Frame()
+	if r, ok := tt.Find("Copying…"); !ok || r.Y >= head.Y+head.H {
+		t.Errorf("progress is not in the header: %v %v (header %v)", r, ok, head)
+	}
+
+	const msg = "Not copied: this pane runs ssh from me@host, a second hop"
+	p.setDropNote(a, msg, true, 0)
+	tt.Frame()
+	r, ok := tt.Find(msg)
+	if !ok {
+		t.Fatalf("the refusal is not shown: %q", tt.Texts())
+	}
+	if r.Y < head.Y+head.H {
+		t.Errorf("the refusal is in the header, not under it: %v (header %v)", r, head)
+	}
+	if tt.HasText("Copying…") {
+		t.Error("the old note is still shown")
+	}
+}

@@ -251,6 +251,11 @@ func (a *App) paneCard(c *ui.Context, k *colors, t *Tab, p *Pane) ui.Element {
 	hovered := card.Hovered()
 	card.Children(func() {
 		a.paneHeader(c, k, t, p, focused, hovered)
+		if p.dropNote != "" && p.dropErr {
+			ui.Box(c).Background(k.attention.Alpha(0.16)).Padding(6, 12, 6, 12).MinWidth(0).Children(func() {
+				ui.Text(c, p.dropNote).FontSize(13).FontWeight(500).TextColor(k.attention)
+			})
+		}
 		body := ui.Box(c).Grow(1).MinHeight(0).Padding(0, 5, 6, 5)
 		body.Children(func() {
 			if p.term == nil {
@@ -303,12 +308,10 @@ func (a *App) paneHeader(c *ui.Context, k *colors, t *Tab, p *Pane, focused, hov
 				ui.Text(c, detail).FontSize(12.5).FontWeight(500).TextColor(k.text.Alpha(0.86)).SingleLine().Ellipsis("…").Shrink(1).MinWidth(0)
 			}
 			a.activityBadge(c, k, p)
-			if p.dropNote != "" {
-				col := k.textMuted
-				if p.dropErr {
-					col = k.attention
-				}
-				ui.Text(c, p.dropNote).FontSize(12).TextColor(col).SingleLine().Ellipsis("…").Shrink(1).MinWidth(0).Tooltip(p.dropNote)
+			// What went wrong is in a banner under the header, which has
+			// the room to be read; progress stays in the header.
+			if p.dropNote != "" && !p.dropErr {
+				ui.Text(c, p.dropNote).FontSize(12).TextColor(k.textMuted).SingleLine().Ellipsis("…").Shrink(1).MinWidth(0).Tooltip(p.dropNote)
 			}
 		})
 		show := focused || hovered

@@ -89,7 +89,8 @@ How a drop or a pasted screenshot reaches an agent:
   is copied to `~/.gorex/drops` on the server's host as `user@name`, as the
   server reports them and this Mac's ssh config resolves them, and that path
   is pasted. A pane running `ssh` or `mosh` inside such a session is a second
-  hop: nothing is copied, and the header says so for 20 seconds and names the
+  hop: nothing is copied, and a red banner under the pane header says so for 20
+  seconds and names the
   way out: drop into a pane that runs the agent on the session's host
   directly, or into a session on this computer (and run `ssh`/`mosh` there).
 - **Pane running `mosh`:** the same as `ssh`. mosh replaces itself with
