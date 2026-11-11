@@ -23,7 +23,10 @@ permissions:
 
 jobs:
   review:
-    runs-on: ubuntu-latest
+    # The org's own runners (CI_RUNNER, label self-hosted-linux), ubuntu-latest when unset. Safe
+    # for a public repository because of the `if` below: only this repository's own branches, or
+    # a collaborator's `/review`, reach it, and it checks out and runs no pull request code.
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-latest' }}
     if: >-
       (github.event_name == 'pull_request' &&
        github.event.pull_request.head.repo.full_name == github.repository &&
