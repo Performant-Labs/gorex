@@ -496,7 +496,7 @@ func serverIsLocal(h rex.HostInfo) bool {
 func (p *Pane) setDropNote(a *App, msg string, isErr bool, clear time.Duration) {
 	p.dropSeq++
 	seq := p.dropSeq
-	p.dropNote, p.dropErr = msg, isErr
+	p.dropNote, p.dropErr, p.dropFor = msg, isErr, clear
 	if clear > 0 {
 		time.AfterFunc(clear, func() {
 			a.laterService(func() {

@@ -377,7 +377,7 @@ func TestDropInRemoteServerSession(t *testing.T) {
 			t.Errorf("host %+v: remote %v, err %v", h, remote, err)
 		}
 		a.dropFiles(p, []string{src})
-		if !p.dropErr || !strings.Contains(p.dropNote, "not a name ssh can reach") || p.term.Text() != before {
+		if !p.dropErr || p.dropFor != dropRefusalTime || !strings.Contains(p.dropNote, "not a name ssh can reach") || p.term.Text() != before {
 			t.Errorf("host %+v: note %q", h, p.dropNote)
 		}
 	}
@@ -397,8 +397,8 @@ func TestDropInRemoteServerSession(t *testing.T) {
 	before = p.term.Text()
 	p.info.Program, p.info.Args, p.info.Idle = "ssh", []string{"ssh", "me@elsewhere"}, false
 	a.dropFiles(p, []string{src})
-	if !p.dropErr || !strings.Contains(p.dropNote, "second hop") || !strings.Contains(p.dropNote, "session on this computer") || p.term.Text() != before {
-		t.Errorf("second hop: note %q, error %v", p.dropNote, p.dropErr)
+	if !p.dropErr || p.dropFor != dropRefusalTime || !strings.Contains(p.dropNote, "second hop") || !strings.Contains(p.dropNote, "session on this computer") || p.term.Text() != before {
+		t.Errorf("second hop: note %q, error %v, stays %v", p.dropNote, p.dropErr, p.dropFor)
 	}
 	if dropRefusalTime <= dropMessageTime {
 		t.Error("a refusal must outlast a progress note")
@@ -471,8 +471,9 @@ func TestDropOnPane(t *testing.T) {
 	}
 }
 
-// A refusal or failure is a banner under the header, with room to be read;
-// progress stays a small note in the header.
+// A refusal or failure is a banner over the terminal, with room to be read;
+// progress stays a small note in the header. The banner takes no room: the
+// terminal keeps its size, so the agent in it does not redraw.
 func TestDropErrorBanner(t *testing.T) {
 	a, tt := newTestApp(t)
 	p := a.tab().Focus
@@ -482,6 +483,7 @@ func TestDropErrorBanner(t *testing.T) {
 	if !ok {
 		t.Fatalf("no header text %q in %q", name, tt.Texts())
 	}
+	cols, rows := p.term.Size()
 
 	p.setDropNote(a, "Copying…", false, 0)
 	tt.Frame()
@@ -491,7 +493,9 @@ func TestDropErrorBanner(t *testing.T) {
 
 	const msg = "Not copied: this pane runs ssh from me@host, a second hop"
 	p.setDropNote(a, msg, true, 0)
-	tt.Frame()
+	for i := 0; i < 3; i++ {
+		tt.Frame()
+	}
 	r, ok := tt.Find(msg)
 	if !ok {
 		t.Fatalf("the refusal is not shown: %q", tt.Texts())
@@ -501,5 +505,8 @@ func TestDropErrorBanner(t *testing.T) {
 	}
 	if tt.HasText("Copying…") {
 		t.Error("the old note is still shown")
+	}
+	if c, rw := p.term.Size(); c != cols || rw != rows {
+		t.Errorf("the banner resized the terminal: %dx%d, was %dx%d", c, rw, cols, rows)
 	}
 }
