@@ -162,7 +162,9 @@ func (a *App) menu() *mygo.Menu {
 	var editSettings []*mygo.MenuItem
 	if runtime.GOOS == "darwin" {
 		appMenu.Submenu = []*mygo.MenuItem{
-			{Role: mygo.RoleAbout},
+			// Not the About role, whose panel shows the version twice: this one
+			// shows the commit of the build.
+			{Label: "About GoRex", Click: func(*mygo.MenuItem, *mygo.Window) { showAbout() }},
 			mygo.Separator(),
 			item(&cmdSettings),
 			mygo.Separator(),

@@ -294,12 +294,17 @@ func TestSettingsMenuItem(t *testing.T) {
 				at[it.Role] = i
 			}
 		}
-		for _, r := range []mygo.MenuRole{mygo.RoleAbout, mygo.RoleServices, mygo.RoleHide, mygo.RoleHideOthers, mygo.RoleUnhide, mygo.RoleQuit} {
+		for _, r := range []mygo.MenuRole{mygo.RoleServices, mygo.RoleHide, mygo.RoleHideOthers, mygo.RoleUnhide, mygo.RoleQuit} {
 			if _, ok := at[r]; !ok {
 				t.Errorf("the app menu lost its %q item", r)
 			}
 		}
-		if i := slices.Index(app.Submenu, settings); i < at[mygo.RoleAbout] {
+		// About is an item of its own, to show the commit of the build.
+		about := findItem(app.Submenu, "About GoRex")
+		if about == nil || about.Click == nil {
+			t.Fatalf("the app menu has no About GoRex that does something: %+v", about)
+		}
+		if i := slices.Index(app.Submenu, settings); i < slices.Index(app.Submenu, about) {
 			t.Error("Settings… comes before About")
 		}
 	} else {
