@@ -23,12 +23,15 @@ permissions:
 
 jobs:
   review:
-    # The org's own runners (CI_RUNNER, label self-hosted-linux), ubuntu-latest when unset. This
-    # repository is public: the `if` below and the refusal step keep a fork's pull request out of
-    # the review, and fork workflow runs need a maintainer's approval (see test.yml), but the
-    # approval setting is the boundary, not these checks.
+    # The org's own runners (CI_RUNNER, label self-hosted-linux) for a trusted trigger:
+    # a `/review` comment (the `if` below admits only OWNER/MEMBER/COLLABORATOR), or a
+    # pull request whose author is in the org variable TRUSTED_CI_AUTHORS (a JSON list of
+    # logins). Another author's pull request is reviewed on ubuntu-latest, as is everything
+    # when CI_RUNNER is unset. This repository is public: the `if` below and the refusal step
+    # keep a fork's pull request out of the review, and fork workflow runs need a maintainer's
+    # approval (see test.yml), but the approval setting is the boundary, not these checks.
     timeout-minutes: 30
-    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-latest' }}
+    runs-on: ${{ (github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && contains(fromJSON(vars.TRUSTED_CI_AUTHORS || '[]'), github.event.pull_request.user.login))) && (vars.CI_RUNNER || 'ubuntu-latest') || 'ubuntu-latest' }}
     if: >-
       (github.event_name == 'pull_request' &&
        github.event.pull_request.head.repo.full_name == github.repository &&
